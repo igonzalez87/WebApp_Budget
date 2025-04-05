@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiFinanza - Gestión Financiera Personal</title>
+    <!-- Link to external CSS -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Favicon Link (Data URI to prevent 404) -->
+    <link rel="icon" href="data:,">
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Chart.js Date Adapter (using date-fns) -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.273 5.625A4.483 4.483 0 0 1 5.25 4.5h13.5c1.141 0 2.183.425 2.977 1.125A3 3 0 0 0 18.75 3H5.25a3 3 0 0 0-2.977 2.625ZM2.273 8.625A4.483 4.483 0 0 1 5.25 7.5h13.5c1.141 0 2.183.425 2.977 1.125A3 3 0 0 0 18.75 6H5.25a3 3 0 0 0-2.977 2.625ZM5.25 9a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3h13.5a3 3 0 0 0 3-3v-6a3 3 0 0 0-3-3H15a.75.75 0 0 0-.75.75 2.25 2.25 0 0 1-4.5 0A.75.75 0 0 0 9 9H5.25Z" /></svg> MiFinanza
+            </div>
+            <div class="header-controls">
+                <div class="currency-selector-container">
+                    <label for="currencySelector">Moneda:</label>
+                    <select id="currencySelector">
+                        <option value="COP">COP</option>
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                    </select>
+                </div>
+                <nav>
+                    <button class="mobile-menu-btn" aria-label="Abrir menú" aria-expanded="false"><svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path fill-rule="evenodd" d="M3 6.75A.75.75 0 0 1 3.75 6h16.5a.75.75 0 0 1 0 1.5H3.75A.75.75 0 0 1 3 6.75ZM3 12a.75.75 0 0 1 .75-.75h16.5a.75.75 0 0 1 0 1.5H3.75A.75.75 0 0 1 3 12Zm0 5.25a.75.75 0 0 1 .75-.75h16.5a.75.75 0 0 1 0 1.5H3.75a.75.75 0 0 1-.75-.75Z" /></svg></button>
+                    <ul id="nav-menu">
+                        <li><a data-target="dashboardSection" class="active">Dashboard</a></li>
+                        <li><a data-target="projectionsSection">Proyecciones</a></li>
+                        <li><a data-target="categorySection">Categorías</a></li>
+                        <li><a data-target="reportsSection">Informes</a></li>
+                        <li><a data-target="settingsSection">Configuración</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Dashboard Section -->
+        <div id="dashboardSection">
+            <div class="dashboard" id="realSummaryDashboard">
+                <div class="card income" id="incomeCard" title="Filtrar Ingresos Reales">
+                     <div class="card-title"><svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm.53 5.47a.75.75 0 0 0-1.06 0l-3 3a.75.75 0 1 0 1.06 1.06l1.72-1.72v5.69a.75.75 0 0 0 1.5 0v-5.69l1.72 1.72a.75.75 0 1 0 1.06-1.06l-3-3Z" /></svg>Ingresos</div>
+                     <div class="card-value" id="incomeValue">0</div>
+                     <div class="card-subtitle">Total Real (Filtrado)</div>
+                 </div>
+                 <div class="card expense" id="expenseCard" title="Filtrar Gastos Reales">
+                     <div class="card-title"><svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-.53 14.03a.75.75 0 0 0 1.06 0l3-3a.75.75 0 1 0-1.06-1.06l-1.72 1.72V8.25a.75.75 0 0 0-1.5 0v5.69l-1.72-1.72a.75.75 0 0 0-1.06 1.06l3 3Z" /></svg>Gastos</div>
+                     <div class="card-value" id="expenseValue">0</div>
+                     <div class="card-subtitle">Total Real (Filtrado)</div>
+                 </div>
+                 <div class="card balance" id="balanceCard" title="Mostrar Todo Real">
+                     <div class="card-title"><svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M4.5 3.75a3 3 0 0 0-3 3v.75h21v-.75a3 3 0 0 0-3-3h-15Z" /><path fill-rule="evenodd" d="M22.5 9.75h-21v7.5a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3v-7.5Zm-18 3.75a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5h-6a.75.75 0 0 1-.75-.75Zm.75 2.25a.75.75 0 0 0 0 1.5h3a.75.75 0 0 0 0-1.5h-3Z" /></svg>Saldo</div>
+                     <div class="card-value" id="balanceValue">0</div>
+                     <div class="card-subtitle">Actual Real (Global)</div>
+                 </div>
+            </div>
+            <div class="list-container">
+                <div class="list-header">
+                    <h2 class="list-title">Transacciones Recientes (Reales)</h2>
+                    <button class="add-btn" id="addTransactionBtn"><svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M12 3.75a.75.75 0 0 1 .75.75v6.75h6.75a.75.75 0 0 1 0 1.5h-6.75v6.75a.75.75 0 0 1-1.5 0v-6.75H4.5a.75.75 0 0 1 0-1.5h6.75V4.5a.75.75 0 0 1 .75-.75Z" /></svg>Añadir</button>
+                </div>
+                <div class="filters">
+                    <input type="text" id="searchInput" class="filter-input" placeholder="Buscar Transacción...">
+                    <select id="categoryFilter" class="filter-input">
+                        <option value="">Categorías</option>
+                        <!-- Options populated by JS -->
+                    </select>
+                    <select id="typeFilter" class="filter-input">
+                        <option value="">Tipos</option>
+                        <option value="income">Ingreso</option>
+                        <option value="expense">Gasto</option>
+                    </select>
+                    <div class="date-range-filter">
+                        <label for="startDateFilter">Desde:</label>
+                        <input type="date" id="startDateFilter" class="filter-input">
+                        <label for="endDateFilter">Hasta:</label>
+                        <input type="date" id="endDateFilter" class="filter-input">
+                    </div>
+                </div>
+                <div class="item-list" id="transactionList">
+                    <p style="text-align:center; padding:1rem; color:var(--text-muted);">Cargando transacciones...</p>
+                </div>
+                <!-- Pagination Controls for Transactions -->
+                <div class="pagination-controls" id="transactionPaginationControls"></div>
+            </div>
+        </div>
+
+        <!-- Projections Section -->
+        <div id="projectionsSection">
+             <div class="list-container"> <!-- Container for top part -->
+                 <div class="list-header">
+                     <h2 class="list-title">Proyecciones Financieras</h2>
+                     <button class="add-btn" id="addProjectionBtn">
+                         <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M12 3.75a.75.75 0 0 1 .75.75v6.75h6.75a.75.75 0 0 1 0 1.5h-6.75v6.75a.75.75 0 0 1-1.5 0v-6.75H4.5a.75.75 0 0 1 0-1.5h6.75V4.5a.75.75 0 0 1 .75-.75Z" /></svg> Añadir Proyección
+                     </button>
+                 </div>
+                 <div class="projection-dashboard-controls">
+                     <h3>Resumen Proyectado</h3>
+                     <div class="projection-date-range">
+                         <label for="projectionRangeEndDate">Hasta:</label>
+                         <input type="date" id="projectionRangeEndDate">
+                     </div>
+                 </div>
+                 <div class="dashboard projected-summary" id="projectedSummaryDashboard">
+                      <div class="card income" id="projectedIncomeCard">
+                         <div class="card-title"><svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm.53 5.47a.75.75 0 0 0-1.06 0l-3 3a.75.75 0 1 0 1.06 1.06l1.72-1.72v5.69a.75.75 0 0 0 1.5 0v-5.69l1.72 1.72a.75.75 0 1 0 1.06-1.06l-3-3Z" /></svg>Ingresos (Real+Proy.)</div>
+                         <div class="card-value" id="projectedIncomeValue">0</div>
+                         <div class="card-subtitle">Total Acumulado hasta Fecha Fin</div>
+                     </div>
+                     <div class="card expense" id="projectedExpenseCard">
+                         <div class="card-title"><svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-.53 14.03a.75.75 0 0 0 1.06 0l3-3a.75.75 0 1 0-1.06-1.06l-1.72 1.72V8.25a.75.75 0 0 0-1.5 0v5.69l-1.72-1.72a.75.75 0 0 0-1.06 1.06l3 3Z" /></svg>Gastos (Real+Proy.)</div>
+                         <div class="card-value" id="projectedExpenseValue">0</div>
+                         <div class="card-subtitle">Total Acumulado hasta Fecha Fin</div>
+                     </div>
+                     <div class="card balance" id="projectedBalanceCard">
+                         <div class="card-title"><svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M4.5 3.75a3 3 0 0 0-3 3v.75h21v-.75a3 3 0 0 0-3-3h-15Z" /><path fill-rule="evenodd" d="M22.5 9.75h-21v7.5a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3v-7.5Zm-18 3.75a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5h-6a.75.75 0 0 1-.75-.75Zm.75 2.25a.75.75 0 0 0 0 1.5h3a.75.75 0 0 0 0-1.5h-3Z" /></svg>Saldo Proyectado</div>
+                         <div class="card-value" id="projectedBalanceValue">0</div>
+                         <div class="card-subtitle">Estimado Acumulado en Fecha Fin</div>
+                     </div>
+                 </div>
+                 <div class="filters">
+                     <input type="text" id="projectionSearchInput" class="filter-input" placeholder="Buscar Proyección...">
+                     <select id="projectionCategoryFilter" class="filter-input">
+                         <option value="">Categorías</option>
+                         <!-- Options populated by JS -->
+                     </select>
+                     <select id="projectionTypeFilter" class="filter-input">
+                         <option value="">Tipos</option>
+                         <option value="income">Ingreso</option>
+                         <option value="expense">Gasto</option>
+                     </select>
+                     <div class="date-range-filter">
+                         <label for="projectionStartDateFilter">Próximo Desde:</label> <input type="date" id="projectionStartDateFilter" class="filter-input">
+                         <label for="projectionEndDateFilter">Próximo Hasta:</label> <input type="date" id="projectionEndDateFilter" class="filter-input">
+                     </div>
+                 </div>
+                 <div class="item-list" id="projectionList">
+                      <p style="text-align:center; padding:1rem; color:var(--text-muted);">Cargando proyecciones...</p>
+                 </div>
+                 <!-- Pagination Controls for Projections -->
+                 <div class="pagination-controls" id="projectionPaginationControls"></div>
+
+                 <!-- Canvas for Projected Balance Chart -->
+                 <div class="chart-container">
+                     <canvas id="projectedBalanceChartCanvas"></canvas>
+                 </div>
+             </div> <!-- End list-container for projections -->
+        </div>
+
+        <!-- Category Section -->
+        <div id="categorySection">
+            <h2 class="category-section-title">Gestionar Categorías</h2>
+            <form id="addCategoryForm" class="add-category-form">
+                <input type="text" id="newCategoryInput" class="form-input" placeholder="Nueva categoría principal" required>
+                <button type="submit" class="btn btn-primary add-btn">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M12 3.75a.75.75 0 0 1 .75.75v6.75h6.75a.75.75 0 0 1 0 1.5h-6.75v6.75a.75.75 0 0 1-1.5 0v-6.75H4.5a.75.75 0 0 1 0-1.5h6.75V4.5a.75.75 0 0 1 .75-.75Z" /></svg> Añadir
+                </button>
+            </form>
+            <ul class="category-list" id="categoryList">
+                <p style="text-align:center; padding:1rem; color:var(--text-muted);">Cargando categorías...</p>
+            </ul>
+        </div>
+
+        <!-- Reports and Settings Sections (Placeholders) -->
+        <div id="reportsSection" class="placeholder-content"><h2>Informes</h2><p>Funcionalidad pendiente...</p></div>
+        <div id="settingsSection" class="placeholder-content"><h2>Configuración</h2><p>Funcionalidad pendiente...</p></div>
+    </main>
+
+    <!-- Modals (Structure remains the same, JS handles population/interaction) -->
+    <!-- Transaction Modal -->
+    <div class="modal" id="transactionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Añadir Transacción</h2>
+                <button class="close-btn" id="closeModalBtn">×</button>
+            </div>
+            <form id="transactionForm">
+                <input type="hidden" id="transactionId"> <!-- Will store Firestore doc ID -->
+                <div class="form-group">
+                    <label for="description" class="form-label">Descripción</label>
+                    <input type="text" id="description" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="amount" class="form-label" id="amountLabel">Importe</label>
+                    <input type="text" id="amount" class="form-input" inputmode="decimal" required placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tipo</label>
+                    <div id="typeSwitchContainer" class="type-switch">
+                        <button type="button" class="type-switch-option expense active" data-value="expense">Gasto</button>
+                        <button type="button" class="type-switch-option income" data-value="income">Ingreso</button>
+                    </div>
+                    <input type="hidden" id="typeValue" name="type" value="expense">
+                </div>
+                <div class="form-group">
+                    <label for="category" class="form-label">Categoría</label>
+                    <select id="category" class="form-select" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="subcategory" class="form-label">Subcategoría</label>
+                    <select id="subcategory" class="form-select" disabled><option value="">-- Opcional --</option></select>
+                </div>
+                <div class="form-group">
+                    <label for="date" class="form-label">Fecha</label>
+                    <input type="date" id="date" class="form-input" required>
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="saveBtn">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Projection Modal -->
+    <div class="modal" id="projectionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="projectionModalTitle">Añadir Proyección</h2>
+                <button class="close-btn" id="closeProjectionModalBtn">×</button>
+            </div>
+            <form id="projectionForm">
+                <input type="hidden" id="projectionId"> <!-- Will store Firestore doc ID -->
+                <div class="form-group">
+                    <label for="projectionDescription" class="form-label">Descripción</label>
+                    <input type="text" id="projectionDescription" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="projectionAmount" class="form-label" id="projectionAmountLabel">Importe Proyectado</label>
+                    <input type="text" id="projectionAmount" class="form-input" inputmode="decimal" required placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tipo</label>
+                    <div id="projectionTypeSwitchContainer" class="type-switch">
+                        <button type="button" class="type-switch-option expense active" data-value="expense">Gasto</button>
+                        <button type="button" class="type-switch-option income" data-value="income">Ingreso</button>
+                    </div>
+                    <input type="hidden" id="projectionTypeValue" name="projectionType" value="expense">
+                </div>
+                <div class="form-group">
+                    <label for="projectionCategory" class="form-label">Categoría</label>
+                    <select id="projectionCategory" class="form-select"><option value="">Sin categoría</option></select>
+                </div>
+                <div class="form-group">
+                    <label for="projectionSubcategory" class="form-label">Subcategoría</label>
+                    <select id="projectionSubcategory" class="form-select" disabled><option value="">-- Opcional --</option></select>
+                </div>
+                <div class="form-group">
+                    <label class="recurrence-toggle-label">
+                        <input type="checkbox" id="isRecurring"> Es Recurrente?
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="nextDueDate" class="form-label">Próxima Fecha / Inicio</label>
+                    <input type="date" id="nextDueDate" class="form-input" required>
+                </div>
+                <div class="recurrence-fields" id="recurrenceFieldsContainer">
+                    <div class="form-group">
+                        <label for="recurrenceFrequency" class="form-label">Frecuencia</label>
+                        <select id="recurrenceFrequency" class="form-select">
+                            <option value="">Seleccionar...</option>
+                            <option value="daily">Diario</option>
+                            <option value="weekly">Semanal</option>
+                            <option value="bi-weekly">Quincenal</option>
+                            <option value="monthly">Mensual</option>
+                            <option value="yearly">Anual</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate" class="form-label">Fecha Fin (Opcional)</label>
+                        <input type="date" id="endDate" class="form-input">
+                    </div>
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="btn btn-secondary" id="cancelProjectionBtn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="saveProjectionBtn">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Category Edit Modal -->
+    <div class="modal" id="categoryEditModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="categoryModalTitle"></h2>
+                <button class="close-btn" id="closeCategoryModalBtn">×</button>
+            </div>
+            <form id="categoryEditForm">
+                <input type="hidden" id="categoryId">
+                <div class="form-group">
+                    <label for="categoryNameInput" class="form-label">Nuevo Nombre</label>
+                    <input type="text" id="categoryNameInput" class="form-input" required>
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="btn btn-secondary" id="cancelCategoryBtn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Subcategory Add Modal -->
+    <div class="modal" id="subcategoryAddModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="subcategoryModalTitle"></h2>
+                <button class="close-btn" id="closeSubcategoryModalBtn">×</button>
+            </div>
+            <form id="subcategoryAddForm">
+                <input type="hidden" id="parentCategoryName">
+                <div class="form-group">
+                    <label for="subcategoryNameInput" class="form-label">Nombre Subcategoría</label>
+                    <input type="text" id="subcategoryNameInput" class="form-input" required>
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="btn btn-secondary" id="cancelSubcategoryBtn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Subcategory Edit Modal -->
+    <div class="modal" id="subcategoryEditModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="subcategoryEditModalTitle"></h2>
+                <button class="close-btn" id="closeSubcategoryEditModalBtn">×</button>
+            </div>
+            <form id="subcategoryEditForm">
+                <input type="hidden" id="editParentCategoryName">
+                <input type="hidden" id="oldSubcategoryName">
+                <div class="form-group">
+                    <label for="editSubcategoryNameInput" class="form-label">Nuevo Nombre</label>
+                    <input type="text" id="editSubcategoryNameInput" class="form-input" required>
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="btn btn-secondary" id="cancelSubcategoryEditBtn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Confirm Delete Modal -->
+    <div class="modal" id="confirmDeleteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Confirmar</h2>
+                <button class="close-btn" id="closeConfirmModalBtn">×</button>
+            </div>
+            <div class="modal-body" style="margin-bottom: 1.5rem;">
+                <p id="confirmDeleteMessage"></p>
+            </div>
+            <div class="form-buttons">
+                <button type="button" class="btn btn-secondary" id="cancelDeleteBtn">No</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Sí, Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container footer-content">
+            <p class="footer-text">© 2024 MiFinanza (Firebase Integrated)</p>
+        </div>
+    </footer>
+    <div class="notification" id="notification"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+    <!-- <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script> -->
+
+    <!-- Link to external JavaScript (using type="module" allows top-level await) -->
+    <script type="module" src="script.js"></script>
+</body>
+</html>
