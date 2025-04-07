@@ -124,6 +124,7 @@ main { padding: 2rem 0; }
     gap: 1rem; /* Espacio entre tarjetas */
     justify-content: space-between; /* Distribuir tarjetas uniformemente */
     overflow: visible; /* Permitir que los elementos hijos sobresalgan */
+    position: relative; /* Asegurar que las tarjetas no se corten */
 }
 
 .dashboard.projected-summary .card {
@@ -138,6 +139,7 @@ main { padding: 2rem 0; }
 .dashboard.projected-summary .card:hover {
     transform: scale(1.05); /* Ampliar ligeramente al pasar el mouse */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Añadir sombra */
+    z-index: 10; /* Asegurar que la tarjeta se muestre completamente */
 }
 
 .dashboard.projected-summary .card.filtered {
@@ -197,7 +199,8 @@ main { padding: 2rem 0; }
  .subcategory-list { list-style: none; padding-left: 2.5rem; margin-top: 0.5rem; overflow: hidden; transition: max-height 0.3s ease-out; }
  .subcategory-list.collapsed { max-height: 0; margin-top: 0; /* Colapsado */ }
  .subcategory-list.expanded { max-height: 500px; /* Expandido (ajusta si necesitas más) */ }
- .subcategory-item { font-size: 0.9rem; color: var(--text-secondary); padding: 0.3rem 0; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+ .subcategory-item { font-size: 0.9rem; color: var(--text-secondary); padding: 0.3rem 0; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; border-bottom: 1px dashed var(--border-color); /* Separador sutil */ }
+ .subcategory-item:last-child { border-bottom: none; /* Eliminar el separador del último elemento */ }
  .subcategory-item span { flex-grow: 1; }
  .subcategory-item .transaction-actions { flex-shrink: 0; }
 
@@ -433,6 +436,8 @@ main { padding: 2rem 0; }
         overflow-x: auto; /* Permitir desplazamiento horizontal */
         gap: 1rem;
         padding-bottom: 1rem; /* Espacio para el scroll horizontal */
+        position: relative; /* Asegurar que las tarjetas no se corten */
+        overflow: visible; /* Permitir que las tarjetas sobresalgan */
     }
 
     .dashboard.projected-summary .card {
@@ -452,6 +457,13 @@ main { padding: 2rem 0; }
     .dashboard.projected-summary .card-subtitle {
         font-size: 0.75rem; /* Reducir subtítulo */
     }
+
+    .dashboard.projected-summary .card:hover {
+        z-index: 10; /* Asegurar que la tarjeta se muestre completamente */
+        transform: scale(1.05); /* Ampliar ligeramente al pasar el mouse */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Añadir sombra */
+    }
+
     .dashboard { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; }
     .dashboard .card { flex: 1 1 calc(50% - 0.5rem); max-width: calc(50% - 0.5rem); padding: 1rem; }
     .dashboard .card-title { font-size: 0.875rem; }
@@ -482,6 +494,32 @@ main { padding: 2rem 0; }
     .subcategory-list { padding-left: 1.5rem; }
     /* Ajuste de altura del gráfico en móvil (opcional) */
     .chart-container { height: 250px; }
+
+    .dashboard, .dashboard.projected-summary {
+        display: flex;
+        flex-wrap: nowrap; /* Evitar que las tarjetas se apilen */
+        gap: 0.5rem; /* Reducir el espacio entre tarjetas */
+        overflow-x: hidden; /* Evitar la barra de desplazamiento lateral */
+    }
+
+    .dashboard .card, .dashboard.projected-summary .card {
+        flex: 1 1 calc(33.333% - 0.5rem); /* Cada tarjeta ocupa un tercio del ancho */
+        max-width: calc(33.333% - 0.5rem); /* Limitar el ancho máximo */
+        min-width: 0; /* Permitir que las tarjetas se ajusten dinámicamente */
+        padding: 0.75rem; /* Reducir el padding interno */
+    }
+
+    .dashboard .card-title, .dashboard.projected-summary .card-title {
+        font-size: 0.8rem; /* Reducir el tamaño del texto del título */
+    }
+
+    .dashboard .card-value, .dashboard.projected-summary .card-value {
+        font-size: 1.1rem; /* Reducir el tamaño del texto del valor */
+    }
+
+    .dashboard .card-subtitle, .dashboard.projected-summary .card-subtitle {
+        font-size: 0.7rem; /* Reducir el tamaño del subtítulo */
+    }
 }
 
 /* Estilos para el modal de conversión */
