@@ -15,6 +15,14 @@ header { background-color: var(--card-color); box-shadow: 0 2px 4px rgba(0,0,0,0
 .logo svg { width: 24px; height: 24px; }
 .header-controls { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
 .currency-selector-container label { margin-right: 0.5rem; font-size: 0.875rem; color: var(--text-secondary); }
+.currency-selector-container {
+    margin-top: 1rem;
+    font-size: 1rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
 #currencySelector { padding: 0.3rem 0.6rem; border: 1px solid var(--border-color); border-radius: 0.375rem; font-size: 0.875rem; background-color: white; }
 nav ul { display: flex; list-style: none; gap: 1.5rem; padding: 0; }
 nav a { text-decoration: none; color: var(--text-secondary); font-weight: 500; transition: color 0.2s; cursor: pointer; }
@@ -23,14 +31,85 @@ nav a:hover, nav a.active { color: var(--primary-color); }
 main { padding: 2rem 0; }
 
 #dashboardSection, #categorySection, #projectionsSection, #reportsSection, #settingsSection { display: none; }
-.dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 1rem; }
-.card { background-color: var(--card-color); border-radius: 0.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 1.5rem; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; border: 2px solid transparent; cursor: pointer; }
-.card:hover { transform: translateY(-5px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+.dashboard {
+    display: flex; /* Cambiar a flexbox */
+    flex-wrap: nowrap; /* Evitar que las tarjetas se apilen */
+    gap: 1rem; /* Espacio entre tarjetas */
+    overflow-x: auto; /* Permitir desplazamiento horizontal si es necesario */
+    overflow: visible; /* Permitir que los elementos hijos sobresalgan */
+}
+.dashboard .card {
+    flex: 1 1 0; /* Todas las tarjetas ocupan el mismo espacio */
+    min-width: 280px; /* Ancho mínimo para cada tarjeta */
+    max-width: 33%; /* Limitar el ancho máximo para mantener proporción */
+    margin-bottom: 1rem; /* Añadir espacio debajo de las tarjetas */
+}
+.card { 
+    background-color: var(--card-color); 
+    border-radius: 0.5rem; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+    padding: 1.5rem; 
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; 
+    border: 2px solid transparent; 
+    cursor: pointer; 
+    transform-origin: center; /* Establecer el origen de la transformación en el centro */
+}
+.card:hover { 
+    transform: scale(1.05); /* Ampliar ligeramente desde el centro */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+}
 .card.filtered { border: 2px solid var(--primary-color); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); }
 .card-title { font-size: 1rem; color: var(--text-secondary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
 .card-value { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; }
 .card-subtitle { font-size: 0.875rem; color: var(--text-muted); }
 .income .card-value { color: var(--success-color); } .expense .card-value { color: var(--danger-color); } .balance .card-value { color: var(--primary-color); }
+
+/* Colores claros para las tarjetas de ingresos, gastos y saldo */
+.income {
+    background-color: #d1fae5; /* Verde claro para ingresos */
+    color: var(--success-color); /* Texto verde oscuro */
+}
+
+.expense {
+    background-color: #fee2e2; /* Rojo claro para gastos */
+    color: var(--danger-color); /* Texto rojo oscuro */
+}
+
+.balance {
+    background-color: #e0e7ff; /* Azul claro para saldo */
+    color: var(--primary-color); /* Texto azul oscuro */
+}
+
+/* Colores claros para las tarjetas de la sección de proyecciones */
+.dashboard.projected-summary .card:nth-child(odd) {
+    background-color: #ede9fe; /* Morado claro para tarjetas impares */
+    color: var(--accent-color); /* Texto morado oscuro */
+}
+
+.dashboard.projected-summary .card:nth-child(even) {
+    background-color: #dbeafe; /* Azul claro para tarjetas pares */
+    color: var(--info-color); /* Texto azul oscuro */
+}
+
+.dashboard.projected-summary .card.income {
+    background-color: #d1fae5; /* Verde claro para ingresos */
+    color: var(--success-color); /* Texto verde oscuro */
+}
+
+.dashboard.projected-summary .card.expense {
+    background-color: #fee2e2; /* Rojo claro para gastos */
+    color: var(--danger-color); /* Texto rojo oscuro */
+}
+
+.dashboard.projected-summary .card.balance {
+    background-color: #e0e7ff; /* Azul claro para saldo */
+    color: var(--primary-color); /* Texto azul oscuro */
+}
+
+/* Ajustes para el texto dentro de las tarjetas */
+.card-title, .card-value, .card-subtitle {
+    color: inherit; /* Heredar el color del contenedor */
+}
 
 /* Estilos específicos para controles y tarjetas de proyección */
 .projection-dashboard-controls { background-color: var(--card-color); padding: 1rem 1.5rem; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 1.5rem; display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; }
@@ -38,7 +117,34 @@ main { padding: 2rem 0; }
 .projection-date-range { display: flex; gap: 0.75rem; align-items: center; flex-grow: 1; flex-wrap: wrap; justify-content: flex-start; }
 .projection-date-range label { font-size: 0.875rem; color: var(--text-secondary); white-space: nowrap; }
 .projection-date-range input[type="date"] { padding: 0.4rem 0.6rem; border: 1px solid var(--border-color); border-radius: 0.375rem; font-size: 0.875rem; min-width: 120px; }
-.dashboard.projected-summary { margin-bottom: 1.5rem; }
+
+.dashboard.projected-summary {
+    display: flex; /* Usar flexbox para alinear horizontalmente */
+    flex-wrap: wrap; /* Permitir que las tarjetas se ajusten si es necesario */
+    gap: 1rem; /* Espacio entre tarjetas */
+    justify-content: space-between; /* Distribuir tarjetas uniformemente */
+    overflow: visible; /* Permitir que los elementos hijos sobresalgan */
+}
+
+.dashboard.projected-summary .card {
+    flex: 1 1 calc(33.333% - 1rem); /* Cada tarjeta ocupa un tercio del ancho con espacio entre ellas */
+    max-width: calc(33.333% - 1rem); /* Limitar el ancho máximo */
+    min-width: 280px; /* Ancho mínimo para mantener la responsividad */
+    cursor: pointer; /* Habilitar el cursor de puntero para indicar interactividad */
+    border: 2px solid transparent; /* Asegurar que las tarjetas tengan un borde inicial */
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; /* Transiciones suaves */
+}
+
+.dashboard.projected-summary .card:hover {
+    transform: scale(1.05); /* Ampliar ligeramente al pasar el mouse */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Añadir sombra */
+}
+
+.dashboard.projected-summary .card.filtered {
+    border: 2px solid var(--primary-color); /* Resaltar la tarjeta filtrada */
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); /* Sombra más pronunciada */
+}
+
 #projectedIncomeCard .card-subtitle, #projectedExpenseCard .card-subtitle { font-size: 0.8em; }
 #projectedBalanceCard .card-subtitle { font-size: 0.8em; }
 
@@ -53,9 +159,8 @@ main { padding: 2rem 0; }
 .date-range-filter { display: flex; gap: 0.5rem; align-items: center; flex-basis: auto; flex-grow: 1; min-width: 320px; }
 .date-range-filter label { font-size: 0.875rem; color: var(--text-secondary); white-space: nowrap; }
 .date-range-filter input[type="date"] { flex-grow: 1; }
-.item-list { border-top: 1px solid var(--border-color); margin-bottom: 1rem; /* Espacio antes de paginación */}
+.item-list { border-top: 1px solid var(--border-color); }
 .list-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid var(--border-color); transition: background-color 0.2s; }
-.list-item:last-child { border-bottom: none; } /* Evitar doble borde con paginación */
 .list-item:hover { background-color: rgba(0,0,0,0.01); }
 .item-info { display: flex; align-items: center; gap: 1rem; flex-grow: 1; margin-right: 1rem; }
 .item-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; }
@@ -72,17 +177,6 @@ main { padding: 2rem 0; }
 .action-btn svg { display: block; width: 18px; height: 18px; pointer-events: none; }
 .action-btn:hover { color: var(--text-primary); } .action-btn[disabled] { cursor: not-allowed; opacity: 0.5; }
 .action-btn.convert-btn:hover { color: var(--info-color); }
-
-/* Estilos para Paginación */
-.pagination-controls {
-    text-align: center;
-    padding-top: 0.5rem; /* Espacio sobre el botón */
-    margin-top: -1px; /* Solapar ligeramente el borde inferior de la lista */
-}
-.btn-pagination {
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-}
 
 /* Estilos para Sección Categorías */
 #categorySection { background-color: var(--card-color); border-radius: 0.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 1.5rem; }
@@ -126,14 +220,136 @@ main { padding: 2rem 0; }
 /* Estilos para Modales */
 .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 20; align-items: center; justify-content: center; padding: 1rem; overflow-y: auto; }
 .modal-content { background-color: var(--card-color); border-radius: 0.5rem; box-shadow: 0 4px 8px rgba(0,0,0,0.1); padding: 2rem; width: 90%; max-width: 500px; margin: 2rem auto; }
- .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
- .modal-title { font-size: 1.25rem; font-weight: 600; }
- .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); line-height: 1; }
- .form-group { margin-bottom: 1.5rem; }
- .form-label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
- .form-input, .form-select { width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.375rem; transition: border-color 0.2s, box-shadow 0.2s; font-size: 1rem; }
- .form-input:focus, .form-select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); }
- .form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1rem; }
+.modal-content {
+    position: relative;
+    max-width: 500px;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content h2 {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.close-modal-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: #555;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.type-switch {
+    display: flex;
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    overflow: hidden; /* Elimina las franjas visibles */
+}
+
+.type-switch-option {
+    flex: 1;
+    padding: 0.75rem;
+    text-align: center;
+    background-color: var(--card-color);
+    color: var(--text-secondary);
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+    font-size: 1rem;
+}
+
+.type-switch-option:first-child {
+    border-top-left-radius: 0.375rem;
+    border-bottom-left-radius: 0.375rem;
+}
+
+.type-switch-option:last-child {
+    border-top-right-radius: 0.375rem;
+    border-bottom-right-radius: 0.375rem;
+    border-left: 1px solid var(--border-color); /* Asegura separación entre botones */
+}
+
+.type-switch-option.active.expense {
+    background-color: var(--danger-color);
+    color: white;
+    border-color: var(--danger-color);
+}
+
+.type-switch-option.active.income {
+    background-color: var(--success-color);
+    color: white;
+    border-color: var(--success-color);
+}
+
+/* Ajuste de borde cuando se selecciona el segundo botón */
+.type-switch-option.expense + .type-switch-option.income.active {
+    border-left: 1px solid var(--success-color);
+}
+
+.type-switch-option.expense.active + .type-switch-option.income {
+    border-left: 1px solid var(--danger-color);
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.modal-actions .btn {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.modal-actions .btn-primary {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.modal-actions .btn-secondary {
+    background-color: #6c757d;
+    color: #fff;
+}
+
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.modal-title { font-size: 1.25rem; font-weight: 600; }
+.close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); line-height: 1; }
+.form-group { margin-bottom: 1.5rem; }
+.form-label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+.form-input, .form-select { width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.375rem; transition: border-color 0.2s, box-shadow 0.2s; font-size: 1rem; }
+.form-input:focus, .form-select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); }
+.form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1rem; }
  /* Estilo para subcategorías deshabilitadas */
  #subcategory, #projectionSubcategory { background-color: #f9fafb; }
  #subcategory:disabled, #projectionSubcategory:disabled { cursor: not-allowed; }
@@ -160,6 +376,10 @@ main { padding: 2rem 0; }
  /* Alineación derecha para importes */
  #amount, #projectionAmount { text-align: right; }
 
+#reportsSection .btn {
+    margin-top: 1rem;
+}
+
 .footer { background-color: var(--card-color); padding: 2rem 0; border-top: 1px solid var(--border-color); margin-top: 2rem; }
 .footer-content { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
 .footer-text { color: var(--text-muted); font-size: 0.875rem; }
@@ -181,7 +401,68 @@ main { padding: 2rem 0; }
     nav ul.show { display: flex; }
     .mobile-menu-btn { display: block; }
     .currency-selector-container { order: 1; }
-    .dashboard { grid-template-columns: 1fr; }
+    .dashboard {
+        display: flex;
+        flex-direction: row; /* Asegurar que las tarjetas estén en fila */
+        overflow-x: auto; /* Permitir desplazamiento horizontal */
+        gap: 1rem;
+        padding-bottom: 1rem; /* Espacio para el scroll horizontal */
+    }
+
+    .dashboard .card {
+        flex: 0 0 280px; /* Ancho fijo para cada tarjeta */
+        max-width: 280px;
+        padding: 1rem; /* Reducir padding */
+    }
+
+    .dashboard .card-title {
+        font-size: 0.875rem; /* Reducir tamaño del texto */
+    }
+
+    .dashboard .card-value {
+        font-size: 1.5rem; /* Reducir tamaño del número */
+    }
+
+    .dashboard .card-subtitle {
+        font-size: 0.75rem; /* Reducir subtítulo */
+    }
+
+    .dashboard.projected-summary {
+        display: flex;
+        flex-direction: row; /* Asegurar que las tarjetas estén en fila */
+        overflow-x: auto; /* Permitir desplazamiento horizontal */
+        gap: 1rem;
+        padding-bottom: 1rem; /* Espacio para el scroll horizontal */
+    }
+
+    .dashboard.projected-summary .card {
+        flex: 0 0 280px; /* Ancho fijo para cada tarjeta */
+        max-width: 280px;
+        padding: 1rem; /* Reducir padding */
+    }
+
+    .dashboard.projected-summary .card-title {
+        font-size: 0.875rem; /* Reducir tamaño del texto */
+    }
+
+    .dashboard.projected-summary .card-value {
+        font-size: 1.5rem; /* Reducir tamaño del número */
+    }
+
+    .dashboard.projected-summary .card-subtitle {
+        font-size: 0.75rem; /* Reducir subtítulo */
+    }
+    .dashboard { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; }
+    .dashboard .card { flex: 1 1 calc(50% - 0.5rem); max-width: calc(50% - 0.5rem); padding: 1rem; }
+    .dashboard .card-title { font-size: 0.875rem; }
+    .dashboard .card-value { font-size: 1.5rem; }
+    .dashboard .card-subtitle { font-size: 0.75rem; }
+    .projection-dashboard-controls { flex-direction: column; align-items: stretch; }
+    .dashboard.projected-summary { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; }
+    .dashboard.projected-summary .card { flex: 1 1 calc(50% - 0.5rem); max-width: calc(50% - 0.5rem); padding: 1rem; }
+    .dashboard.projected-summary .card-title { font-size: 0.875rem; }
+    .dashboard.projected-summary .card-value { font-size: 1.5rem; }
+    .dashboard.projected-summary .card-subtitle { font-size: 0.75rem; }
     .list-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
     .filters { flex-direction: column; align-items: stretch; }
     .date-range-filter { flex-direction: column; align-items: stretch; gap: 0.5rem; min-width: unset; }
@@ -201,4 +482,104 @@ main { padding: 2rem 0; }
     .subcategory-list { padding-left: 1.5rem; }
     /* Ajuste de altura del gráfico en móvil (opcional) */
     .chart-container { height: 250px; }
+}
+
+/* Estilos para el modal de conversión */
+#convertProjectionModal .modal-content {
+    /* Reutilizar estilos de otros modales */
+    position: relative;
+    max-width: 500px;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: var(--card-color);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#convertProjectionModal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+#convertProjectionModal .modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+#convertProjectionModal .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    line-height: 1;
+}
+
+#convertProjectionModal .form-group {
+    margin-bottom: 1.5rem;
+}
+
+#convertProjectionModal .form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+#convertProjectionModal .form-input,
+#convertProjectionModal .form-select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-size: 1rem;
+}
+
+#convertProjectionModal .form-input:focus,
+#convertProjectionModal .form-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+#convertProjectionModal .form-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+#convertProjectionModal .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+#convertProjectionModal .btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+    border: 1px solid var(--primary-color);
+}
+
+#convertProjectionModal .btn-primary:hover {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+#convertProjectionModal .btn-secondary {
+    background-color: white;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+#convertProjectionModal .btn-secondary:hover {
+    background-color: var(--background-color);
+    border-color: var(--text-muted);
+}
+
+#convertProjectionAmount {
+    text-align: right; /* Alinear el texto a la derecha */
 }
