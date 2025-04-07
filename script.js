@@ -38,6 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const projectedIncomeValueEl = document.getElementById('projectedIncomeValue');
     const projectedExpenseValueEl = document.getElementById('projectedExpenseValue');
     const projectedBalanceValueEl = document.getElementById('projectedBalanceValue');
+    const projectedIncomeCard = document.getElementById('projectedIncomeCard');
+    const projectedExpenseCard = document.getElementById('projectedExpenseCard');
+    const projectedBalanceCard = document.getElementById('projectedBalanceCard');
     const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
     const navMenu = document.getElementById('nav-menu');
     const navLinks = navMenu.querySelectorAll('a[data-target]');
@@ -59,10 +62,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const transactionSubcategorySelect = document.getElementById('subcategory');
     const dateInput = document.getElementById('date');
     const transactionList = document.getElementById('transactionList');
-    const transactionPaginationControls = document.getElementById('transactionPaginationControls'); // Nuevo
     const searchInput = document.getElementById('searchInput');
     const categoryFilter = document.getElementById('categoryFilter');
-    const typeFilter = document.getElementById('typeFilter');
     const startDateFilter = document.getElementById('startDateFilter');
     const endDateFilter = document.getElementById('endDateFilter');
     const addProjectionBtn = document.getElementById('addProjectionBtn');
@@ -85,10 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const recurrenceFrequencySelect = document.getElementById('recurrenceFrequency');
     const endDateInput = document.getElementById('endDate');
     const projectionList = document.getElementById('projectionList');
-    const projectionPaginationControls = document.getElementById('projectionPaginationControls'); // Nuevo
     const projectionSearchInput = document.getElementById('projectionSearchInput');
     const projectionCategoryFilter = document.getElementById('projectionCategoryFilter');
-    const projectionTypeFilter = document.getElementById('projectionTypeFilter');
     const projectionStartDateFilter = document.getElementById('projectionStartDateFilter');
     const projectionEndDateFilter = document.getElementById('projectionEndDateFilter');
     const addCategoryForm = document.getElementById('addCategoryForm');
@@ -123,7 +122,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmDeleteMessage = document.getElementById('confirmDeleteMessage');
     const notification = document.getElementById('notification');
     const currencySelector = document.getElementById('currencySelector');
+    // Referencia al Canvas del gráfico
     const projectedBalanceChartCanvas = document.getElementById('projectedBalanceChartCanvas');
+    const convertProjectionModal = document.getElementById('convertProjectionModal');
+    const convertProjectionForm = document.getElementById('convertProjectionForm');
+    const convertProjectionId = document.getElementById('convertProjectionId');
+    const convertProjectionDescriptionInput = document.getElementById('convertProjectionDescription');
+    const convertProjectionAmountInput = document.getElementById('convertProjectionAmount');
+    const convertProjectionCategorySelect = document.getElementById('convertProjectionCategory');
+    const convertProjectionSubcategorySelect = document.getElementById('convertProjectionSubcategory');
+    const convertProjectionDateInput = document.getElementById('convertProjectionDate');
+    const saveConvertProjectionBtn = document.getElementById('saveConvertProjectionBtn');
+    const cancelConvertProjectionBtn = document.getElementById('cancelConvertProjectionBtn');
+    const closeConvertProjectionModalBtn = document.getElementById('closeConvertProjectionModalBtn');
+    const convertProjectionTypeSwitchContainer = document.getElementById('convertProjectionTypeSwitchContainer');
+    const convertProjectionTypeValue = document.getElementById('convertProjectionTypeValue');
 
     // --- Estado de la Aplicación ---
     let transactions = [];
@@ -133,23 +146,22 @@ document.addEventListener('DOMContentLoaded', () => {
     let editingTransactionId = null;
     let editingProjectionId = null;
     let activeCardTypeFilter = null;
+    let activeProjectionCardFilter = null;
     let currentRealBalance = 0;
     let selectedCurrency = 'COP';
     const UNCATEGORIZED = "Sin categoría";
+    // Variable para la instancia del gráfico
     let projectedBalanceChart = null;
-    const ITEMS_PER_PAGE = 10; // Nuevo: Límite de elementos por página
-    let showAllTransactions = false; // Nuevo: Estado para paginación de transacciones
-    let showAllProjections = false; // Nuevo: Estado para paginación de proyecciones
 
-    // --- Iconos SVG ---
-    const svgPlus = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" /></svg>';
-    const svgEdit = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path></svg>';
-    const svgDelete = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>';
+    // --- Iconos SVG con estilos adicionales ---
+    const svgPlus = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="color: green; border: 2px solid green; border-radius: 50%; padding: 4px; width: 28px; height: 28px;"><path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" /></svg>';
+    const svgEdit = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="color: blue; border: 2px solid blue; border-radius: 50%; padding: 4px; width: 28px; height: 28px;"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path></svg>';
+    const svgDelete = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="color: red; border: 2px solid red; border-radius: 50%; padding: 4px; width: 28px; height: 28px;"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>';
     const svgIncome = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M11.47 2.47a.75.75 0 0 1 1.06 0l3.75 3.75a.75.75 0 0 1-1.06 1.06l-2.47-2.47V21a.75.75 0 0 1-1.5 0V4.81L8.78 7.28a.75.75 0 0 1-1.06-1.06l3.75-3.75Z" /></svg>';
     const svgExpense = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2.25a.75.75 0 0 1 .75.75v16.19l2.47-2.47a.75.75 0 1 1 1.06 1.06l-3.75 3.75a.75.75 0 0 1-1.06 0l-3.75-3.75a.75.75 0 1 1 1.06-1.06l2.47 2.47V3a.75.75 0 0 1 .75-.75Z" /></svg>';
-    const svgConvert = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" /></svg>';
+    const svgConvert = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="color: orange; border: 2px solid orange; border-radius: 50%; padding: 4px; width: 28px; height: 28px;"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" /></svg>';
     const svgRecurring = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M15.312 11.424a5.5 5.5 0 01-9.201-2.43l.208-.068a.75.75 0 00-.346-1.456l-.208.068A6.979 6.979 0 003 10a7 7 0 1011.688-4.576l.143-.428a.75.75 0 00-1.4-.468l-.143.428a5.505 5.505 0 01-3.463 4.193 5.5 5.5 0 01-5.265-1.48l-.17.146a.75.75 0 10.98 1.132l.17-.146a5.5 5.5 0 017.906 2.36l-.188.063a.75.75 0 10.376 1.44l.188-.063z" clip-rule="evenodd" /></svg>';
-    const svgWarning = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg>';
+    const svgWarning = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path></svg>';
 
     // --- Inicialización ---
     async function initializeApp() {
@@ -223,40 +235,26 @@ document.addEventListener('DOMContentLoaded', () => {
         incomeCard.addEventListener('click', () => handleCardFilterClick('income'));
         expenseCard.addEventListener('click', () => handleCardFilterClick('expense'));
         balanceCard.addEventListener('click', () => handleCardFilterClick(null));
-
-        // --- Filtros Dashboard ---
         const dashboardFilterInputs = [searchInput, categoryFilter, startDateFilter, endDateFilter];
-        dashboardFilterInputs.forEach(input => input.addEventListener('input', () => {
-            showAllTransactions = false; // Reset pagination on filter change
-            if (isSectionVisible('dashboardSection')) renderUI();
-        }));
-        typeFilter.addEventListener('change', () => {
-            activeCardTypeFilter = null;
-            clearCardFilterVisuals();
-            showAllTransactions = false; // Reset pagination on filter change
-            if (isSectionVisible('dashboardSection')) renderUI();
-        });
-
-        // --- Filtros Proyecciones ---
-        const projectionFilterInputs = [projectionSearchInput, projectionCategoryFilter, projectionTypeFilter, projectionStartDateFilter, projectionEndDateFilter];
-        projectionFilterInputs.forEach(input => input.addEventListener('input', () => {
-             showAllProjections = false; // Reset pagination on filter change
-             if (isSectionVisible('projectionsSection')) renderProjectionsPage();
-        }));
-
+        dashboardFilterInputs.forEach(input => input.addEventListener('input', () => { if (isSectionVisible('dashboardSection')) renderUI(); }));
         // Listener para fecha de proyección (actualiza tarjetas y gráfico)
         projectionRangeEndDateInput.addEventListener('input', () => {
             updateProjectedDashboardCards();
             renderProjectedBalanceChart(); // Llama a la función del gráfico
         });
-
+        const projectionFilterInputs = [projectionSearchInput, projectionCategoryFilter, projectionStartDateFilter, projectionEndDateFilter];
+        projectionFilterInputs.forEach(input => input.addEventListener('input', () => { if (isSectionVisible('projectionsSection')) renderProjectionsPage(); }));
         isRecurringCheckbox.addEventListener('change', toggleRecurrenceFields);
-        transactionCategorySelect.addEventListener('change', handleMainCategoryChange);
+        transactionCategorySelect.addEventListener('change', (e) => {
+            populateSubcategoryDropdown(e.target.value, null, transactionSubcategorySelect);
+        });
         typeSwitchContainer.addEventListener('click', (e) => { const button = e.target.closest('.type-switch-option'); if (button) handleTypeSwitch(button, typeValueInput); });
         amountInput.addEventListener('input', handleAmountInput);
         amountInput.addEventListener('paste', handleAmountPaste);
         amountInput.addEventListener('focus', handleAmountInput);
-        projectionCategorySelect.addEventListener('change', handleProjectionMainCategoryChange);
+        projectionCategorySelect.addEventListener('change', (e) => {
+            populateSubcategoryDropdown(e.target.value, null, projectionSubcategorySelect);
+        });
         projectionTypeSwitchContainer.addEventListener('click', (e) => { const button = e.target.closest('.type-switch-option'); if (button) handleTypeSwitch(button, projectionTypeValueInput); });
         projectionAmountInput.addEventListener('input', handleAmountInput);
         projectionAmountInput.addEventListener('paste', handleAmountPaste);
@@ -264,21 +262,80 @@ document.addEventListener('DOMContentLoaded', () => {
         transactionList.addEventListener('click', handleListTransactionActions);
         projectionList.addEventListener('click', handleListProjectionActions);
         categoryList.addEventListener('click', handleCategoryListActions);
-        currencySelector.addEventListener('change', handleCurrencyChange);
+        currencySelector.addEventListener('change', handleCurrencyChange); // Hecho async abajo
 
-        // --- Listeners para Paginación (usando delegación) ---
-        transactionPaginationControls.addEventListener('click', (e) => {
-            if (e.target.id === 'toggleTransactionsBtn') {
-                showAllTransactions = !showAllTransactions;
-                renderUI(); // Re-render transactions section
-            }
+        const exportDataBtn = document.getElementById('exportDataBtn');
+        if (exportDataBtn) {
+            exportDataBtn.addEventListener('click', exportDataToCSV);
+        }
+
+        convertProjectionForm.addEventListener('submit', handleConvertProjectionFormSubmit);
+        cancelConvertProjectionBtn.addEventListener('click', closeConvertProjectionModal);
+        closeConvertProjectionModalBtn.addEventListener('click', closeConvertProjectionModal);
+        convertProjectionTypeSwitchContainer.addEventListener('click', (e) => {
+            const button = e.target.closest('.type-switch-option');
+            if (button) handleTypeSwitch(button, convertProjectionTypeValue);
         });
-        projectionPaginationControls.addEventListener('click', (e) => {
-            if (e.target.id === 'toggleProjectionsBtn') {
-                showAllProjections = !showAllProjections;
-                renderProjectionsPage(); // Re-render projections section
-            }
+        convertProjectionCategorySelect.addEventListener('change', (e) => {
+            populateSubcategoryDropdown(e.target.value, null, convertProjectionSubcategorySelect);
         });
+        convertProjectionAmountInput.addEventListener('input', handleAmountInput);
+        convertProjectionAmountInput.addEventListener('paste', handleAmountPaste);
+        convertProjectionAmountInput.addEventListener('focus', handleAmountInput);
+
+        // Aplica estilos al selector de tipo en los modales
+        applyTypeSwitchStyles(typeSwitchContainer);
+        applyTypeSwitchStyles(projectionTypeSwitchContainer);
+        applyTypeSwitchStyles(convertProjectionTypeSwitchContainer);
+    }
+
+    // --- Export Data Functionality ---
+    function exportDataToCSV() {
+        const headers = ['Tipo', 'Descripción', 'Categoría', 'Subcategoría', 'Fecha', 'Importe'];
+        const rows = [];
+
+        // Agregar transacciones
+        transactions.forEach(tx => {
+            rows.push([
+                'Transacción',
+                String(tx.description || ''),
+                String(tx.category || UNCATEGORIZED),
+                String(tx.subcategory || ''),
+                String(tx.date || ''),
+                String(tx.amount || 0)
+            ]);
+        });
+
+        // Agregar proyecciones
+        projections.forEach(proj => {
+            rows.push([
+                'Proyección',
+                String(proj.description || ''),
+                String(proj.category || UNCATEGORIZED),
+                String(proj.subcategory || ''),
+                String(proj.nextDueDate || ''),
+                String(proj.amount || 0)
+            ]);
+        });
+
+        // Convertir a CSV con delimitador alternativo (;)
+        const csvContent = [headers, ...rows]
+            .map(row => row.map(value => `"${value.replace(/"/g, '""')}"`).join(';'))
+            .join('\n');
+
+        // Agregar BOM para manejar caracteres especiales
+        const bom = '\uFEFF';
+        const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
+
+        // Crear un enlace de descarga
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'datos_mifinanza.csv';
+        document.body.appendChild(link); // Necesario para Firefox
+        link.click();
+        document.body.removeChild(link); // Eliminar el enlace después de usarlo
+        URL.revokeObjectURL(url);
     }
 
     // --- Navegación ---
@@ -302,10 +359,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const activeLink = clickedLink || navMenu.querySelector(`a[data-target="${sectionId}"]`);
             if (activeLink) activeLink.classList.add('active');
 
-            // Reset pagination states when navigating
-            showAllTransactions = false;
-            showAllProjections = false;
-
             if (sectionId === 'dashboardSection') {
                 renderUI();
             } else if (sectionId === 'categorySection') {
@@ -320,7 +373,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (dashboardSection) dashboardSection.style.display = 'block';
             const fallbackLink = navMenu.querySelector('a[data-target="dashboardSection"]');
             if (fallbackLink) fallbackLink.classList.add('active');
-            showAllTransactions = false; // Reset pagination state
             renderUI();
         }
     }
@@ -410,28 +462,111 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Transaction Form Funcs ---
-    function handleTypeSwitch(buttonElement, valueInputElement) { const container = buttonElement.closest('.type-switch'); if (!container) return; container.querySelectorAll('.type-switch-option').forEach(btn => btn.classList.remove('active')); buttonElement.classList.add('active'); valueInputElement.value = buttonElement.dataset.value; }
-    function handleAmountInput(event) { const inputElement = event.target; let rawValue = inputElement.value; let selectionStart = inputElement.selectionStart ?? 0; const isNegative = rawValue.startsWith('-'); if (isNegative) rawValue = rawValue.substring(1); const currencySymbol = getCurrencySymbol(selectedCurrency); const locale = selectedCurrency === 'EUR' ? 'es-ES' : selectedCurrency === 'USD' ? 'en-US' : 'es-CO'; const formatter = new Intl.NumberFormat(locale); const parts = formatter.formatToParts(1000); const thousandsSeparator = parts.find(part => part.type === 'group')?.value || ','; let numericString = rawValue.replace(new RegExp(`\\${currencySymbol}`, 'g'), ''); numericString = numericString.replace(new RegExp(`\\${thousandsSeparator.replace('.', '\\.')}`, 'g'), ''); numericString = numericString.replace(/[^0-9]/g, ''); if (numericString.length > 1 && numericString.startsWith('0')) { numericString = numericString.substring(1); } let formattedValue = ''; if (numericString) { const number = parseInt(numericString, 10); if (!isNaN(number)) { formattedValue = number.toLocaleString(locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 }); } } let finalValue = formattedValue ? `${currencySymbol}${formattedValue}` : ''; if (isNegative && finalValue) { finalValue = `-${finalValue}`; } else if (inputElement.value === '-') { finalValue = '-'; } const originalLength = inputElement.value.length; inputElement.value = finalValue; const newLength = finalValue.length; try { const diff = newLength - originalLength; const charsAddedOrRemovedBeforeCursor = (rawValue.substring(0, selectionStart).match(/[^0-9-]/g) || []).length - (finalValue.substring(0, Math.min(selectionStart + diff, newLength)).match(/[^0-9-]/g) || []).length; let newPosition = selectionStart + diff - charsAddedOrRemovedBeforeCursor; newPosition = Math.max(0, Math.min(newPosition, newLength)); inputElement.setSelectionRange(newPosition, newPosition); } catch (err) { try { inputElement.setSelectionRange(newLength, newLength); } catch (selErr) { /* Ignore */ } } }
-    function handleAmountPaste(event) { event.preventDefault(); const pasteText = event.clipboardData?.getData('text') || ''; const inputElement = event.target; const { value, selectionStart, selectionEnd } = inputElement; const newValue = (value.substring(0, selectionStart ?? 0) + pasteText + value.substring(selectionEnd ?? value.length)); inputElement.value = newValue; handleAmountInput({ target: inputElement }); }
-    function parseFormattedAmount(formattedValue) { if (!formattedValue || typeof formattedValue !== 'string') return { numberValue: NaN }; let value = formattedValue.trim(); const isNegative = value.startsWith('-'); if (isNegative) value = value.substring(1); const currencySymbol = getCurrencySymbol(selectedCurrency); const locale = selectedCurrency === 'EUR' ? 'es-ES' : selectedCurrency === 'USD' ? 'en-US' : 'es-CO'; const formatter = new Intl.NumberFormat(locale); const parts = formatter.formatToParts(1000); const thousandsSeparator = parts.find(part => part.type === 'group')?.value || ','; let numericString = value.replace(new RegExp(`\\${currencySymbol}`, 'g'), ''); numericString = numericString.replace(new RegExp(`\\${thousandsSeparator.replace('.', '\\.')}`, 'g'), ''); numericString = numericString.replace(/[^0-9]/g, ''); if (numericString === '') return { numberValue: 0 }; let number = parseInt(numericString, 10); if (isNaN(number)) return { numberValue: NaN }; if (isNegative) number = -number; return { numberValue: Math.trunc(number) }; }
-    async function handleCurrencyChange(event) {
+    function handleTypeSwitch(buttonElement, valueInputElement) {
+        const container = buttonElement.closest('.type-switch');
+        if (!container) return;
+
+        // Actualiza la selección visual y el valor del input oculto
+        container.querySelectorAll('.type-switch-option').forEach(btn => btn.classList.remove('active'));
+        buttonElement.classList.add('active');
+        valueInputElement.value = buttonElement.dataset.value || ''; // Asegura que el valor se actualice correctamente
+    }
+
+    // Aplica estilos consistentes al contenedor del selector de tipo
+    function applyTypeSwitchStyles(container) {
+        if (!container) return;
+
+        container.classList.add('type-switch');
+        container.querySelectorAll('.type-switch-option').forEach(option => {
+            option.classList.add('type-switch-option');
+        });
+    }
+
+    function handleAmountInput(event) {
+        const inputElement = event.target;
+        let rawValue = inputElement.value;
+        let selectionStart = inputElement.selectionStart ?? 0;
+
+        const isNegative = rawValue.startsWith('-');
+        if (isNegative) rawValue = rawValue.substring(1);
+
+        const currencySymbol = getCurrencySymbol(selectedCurrency);
+        const locale = selectedCurrency === 'EUR' ? 'es-ES' : selectedCurrency === 'USD' ? 'en-US' : 'es-CO';
+        const formatter = new Intl.NumberFormat(locale);
+        const parts = formatter.formatToParts(1000);
+        const thousandsSeparator = parts.find(part => part.type === 'group')?.value || ',';
+
+        let numericString = rawValue.replace(new RegExp(`\\${currencySymbol}`, 'g'), '');
+        numericString = numericString.replace(new RegExp(`\\${thousandsSeparator.replace('.', '\\.')}`, 'g'), '');
+        numericString = numericString.replace(/[^0-9]/g, '');
+
+        if (numericString.length > 1 && numericString.startsWith('0')) {
+            numericString = numericString.substring(1);
+        }
+
+        let formattedValue = '';
+        if (numericString) {
+            const number = parseInt(numericString, 10);
+            if (!isNaN(number)) {
+                formattedValue = number.toLocaleString(locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+            }
+        }
+
+        let finalValue = formattedValue ? `${currencySymbol}${formattedValue}` : '';
+        if (isNegative && finalValue) {
+            finalValue = `-${finalValue}`;
+        } else if (inputElement.value === '-') {
+            finalValue = '-';
+        }
+
+        const originalLength = inputElement.value.length;
+        inputElement.value = finalValue;
+        const newLength = finalValue.length;
+
+        try {
+            const diff = newLength - originalLength;
+            const charsAddedOrRemovedBeforeCursor =
+                (rawValue.substring(0, selectionStart).match(/[^0-9-]/g) || []).length -
+                (finalValue.substring(0, Math.min(selectionStart + diff, newLength)).match(/[^0-9-]/g) || []).length;
+
+            let newPosition = selectionStart + diff - charsAddedOrRemovedBeforeCursor;
+            newPosition = Math.max(0, Math.min(newPosition, newLength));
+            inputElement.setSelectionRange(newPosition, newPosition);
+        } catch (err) {
+            try {
+                inputElement.setSelectionRange(newLength, newLength);
+            } catch (selErr) {
+                /* Ignore */
+            }
+        }
+    }
+
+    function handleAmountPaste(event) {
+        event.preventDefault();
+        const pasteText = event.clipboardData?.getData('text') || '';
+        const inputElement = event.target;
+        const { value, selectionStart, selectionEnd } = inputElement;
+        const newValue = (value.substring(0, selectionStart ?? 0) + pasteText + value.substring(selectionEnd ?? value.length));
+        inputElement.value = newValue;
+        handleAmountInput({ target: inputElement });
+    }
+
+    async function handleCurrencyChange(event) { // Hecha async
         selectedCurrency = event.target.value;
         await saveSettings(); // Guardar preferencia
         updateAmountLabel();
         updateProjectionAmountLabel();
-        showAllTransactions = false; // Reset pagination
-        showAllProjections = false; // Reset pagination
 
         if (isSectionVisible('dashboardSection')) {
-            renderUI();
+            renderUI(); // Actualiza dashboard y tarjetas proyectadas
         }
         if (isSectionVisible('projectionsSection')) {
-            updateDashboard();
-            renderProjectionsPage();
+            updateDashboard(); // Recalcular balance real
+            renderProjectionsPage(); // Esto ya debería llamar a renderProjectedBalanceChart
         } else {
-             updateDashboard(); // Still need to update this for projection calculations
+            // Si no estamos en proyecciones, igual actualizamos las tarjetas y el gráfico
              updateProjectedDashboardCards();
-             renderProjectedBalanceChart(); // Update chart
+             renderProjectedBalanceChart(); // Actualizar gráfico
         }
      }
     function updateAmountLabel() { amountLabel.textContent = `Importe (${getCurrencySymbol(selectedCurrency)})`; }
@@ -507,9 +642,7 @@ document.addEventListener('DOMContentLoaded', () => {
              }
              transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
              closeModal();
-
-             showAllTransactions = false; // Reset pagination after add/edit
-             // Actualizar UI correspondiente (incluyendo gráfico si es necesario)
+             // Actualizar UI correspondiente (incluyendo gráfico)
              if (isSectionVisible('dashboardSection')) { renderUI(); }
              if (isSectionVisible('projectionsSection')) {
                  updateDashboard();
@@ -544,7 +677,6 @@ document.addEventListener('DOMContentLoaded', () => {
             openConfirmDeleteModal(transactionId, 'transaction');
         }
      }
-    function handleMainCategoryChange(event) { populateSubcategoryDropdown(event.target.value, null, transactionSubcategorySelect); }
 
     // --- Projection Form Funcs ---
     function toggleRecurrenceFields() { if (isRecurringCheckbox.checked) { recurrenceFieldsContainer.classList.add('visible'); recurrenceFrequencySelect.required = true; } else { recurrenceFieldsContainer.classList.remove('visible'); recurrenceFrequencySelect.required = false; recurrenceFrequencySelect.value = ''; endDateInput.value = ''; } }
@@ -624,8 +756,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             projections.sort((a, b) => (a.nextDueDate || '').localeCompare(b.nextDueDate || ''));
             closeProjectionModal();
-
-            showAllProjections = false; // Reset pagination after add/edit
              // Actualizar UI correspondiente (incluyendo gráfico)
              if (isSectionVisible('projectionsSection')) {
                  renderProjectionsPage(); // Actualiza lista y gráfico
@@ -641,7 +771,6 @@ document.addEventListener('DOMContentLoaded', () => {
              saveProjectionBtn.textContent = editingProjectionId ? 'Guardar Cambios' : 'Guardar';
         }
     }
-    function handleProjectionMainCategoryChange(event) { populateSubcategoryDropdown(event.target.value, null, projectionSubcategorySelect); }
 
     async function handleListProjectionActions(event) {
         const convertButton = event.target.closest('.convert-btn');
@@ -654,8 +783,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!projectionId) return;
 
         if (convertButton) {
-            convertButton.disabled = true;
-            await convertProjectionToTransaction(projectionId);
+            const projection = projections.find(p => p.id === projectionId);
+            if (projection) {
+                convertProjectionModal.dataset.projectionId = projectionId;
+                openConvertProjectionModal(projection);
+            } else {
+                showNotification('Error: Proyección no encontrada.', 'error');
+            }
         } else if (editButton) {
             const projection = projections.find(p => p.id === projectionId);
             if (projection) openProjectionModal(projection);
@@ -666,26 +800,71 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function calculateNextDueDate(currentDueDateStr, frequency) { if (!currentDueDateStr || !frequency) return null; const currentDate = new Date(currentDueDateStr + 'T00:00:00Z'); if (isNaN(currentDate.getTime())) { console.error("Invalid date provided to calculateNextDueDate:", currentDueDateStr); return null; } switch (frequency) { case 'daily': currentDate.setUTCDate(currentDate.getUTCDate() + 1); break; case 'weekly': currentDate.setUTCDate(currentDate.getUTCDate() + 7); break; case 'bi-weekly': currentDate.setUTCDate(currentDate.getUTCDate() + 14); break; case 'monthly': currentDate.setUTCMonth(currentDate.getUTCMonth() + 1); break; case 'yearly': currentDate.setUTCFullYear(currentDate.getUTCFullYear() + 1); break; default: console.warn("Unknown frequency in calculateNextDueDate:", frequency); return null; } return currentDate.toISOString().split('T')[0]; }
 
-    async function convertProjectionToTransaction(projectionId) {
-        const projIndex = projections.findIndex(p => p.id === projectionId);
-        if (projIndex === -1) { showNotification('Error: Proyección no encontrada para convertir.', 'error'); return; }
-        const projection = projections[projIndex];
-        const todayDate = getLocalDateString();
+    function openConvertProjectionModal(projection) {
+        convertProjectionForm.reset();
+        convertProjectionId.value = projection.id;
+        convertProjectionDescriptionInput.value = projection.description;
+        convertProjectionAmountInput.value = formatCurrency(projection.amount, selectedCurrency);
+        convertProjectionCategorySelect.value = projection.category || UNCATEGORIZED;
+        populateSubcategoryDropdown(projection.category || UNCATEGORIZED, projection.subcategory, convertProjectionSubcategorySelect);
+        convertProjectionDateInput.value = getLocalDateString();
 
-        const newTransactionData = { description: projection.description, amount: projection.amount, type: projection.type, category: projection.category, subcategory: projection.subcategory, date: todayDate };
+        // Asegura que el tipo esté seleccionado correctamente
+        const typeButton = convertProjectionTypeSwitchContainer.querySelector(`[data-value="${projection.type}"]`);
+        if (typeButton) handleTypeSwitch(typeButton, convertProjectionTypeValue);
+
+        // Carga las categorías en la lista respectiva
+        populateCategoryDropdowns();
+
+        convertProjectionModal.style.display = 'flex';
+        convertProjectionDescriptionInput.focus();
+    }
+
+    function closeConvertProjectionModal() {
+        convertProjectionModal.style.display = 'none';
+        convertProjectionForm.reset();
+    }
+
+    async function handleConvertProjectionFormSubmit(event) {
+        event.preventDefault();
+
+        const description = convertProjectionDescriptionInput.value.trim();
+        const { numberValue: amount } = parseFormattedAmount(convertProjectionAmountInput.value);
+        const category = convertProjectionCategorySelect.value || UNCATEGORIZED;
+        const subcategory = convertProjectionSubcategorySelect.disabled ? null : (convertProjectionSubcategorySelect.value || null);
+        const date = convertProjectionDateInput.value;
+
+        if (!description || isNaN(amount) || !date) {
+            showNotification('Por favor complete todos los campos requeridos.', 'error');
+            return;
+        }
+
+        const projectionId = convertProjectionModal.dataset.projectionId;
+        if (!projectionId) {
+            showNotification('Error: Proyección no encontrada.', 'error');
+            return;
+        }
+
+        const newTransactionData = { description, amount, type: 'income', category, subcategory, date };
         const batch = db.batch();
 
         try {
             const newTransactionRef = transactionsCol.doc();
             batch.set(newTransactionRef, newTransactionData);
+
             const projectionRef = projectionsCol.doc(projectionId);
+            const projection = projections.find(p => p.id === projectionId);
 
             if (projection.isRecurring) {
-                const nextPossibleDueDate = calculateNextDueDate(projection.nextDueDate, projection.recurrenceFrequency);
-                if (nextPossibleDueDate && (!projection.endDate || nextPossibleDueDate <= projection.endDate)) {
-                    batch.update(projectionRef, { nextDueDate: nextPossibleDueDate });
-                } else { batch.delete(projectionRef); }
-            } else { batch.delete(projectionRef); }
+                const nextDueDate = calculateNextDueDate(projection.nextDueDate, projection.recurrenceFrequency);
+                if (nextDueDate && (!projection.endDate || nextDueDate <= projection.endDate)) {
+                    batch.update(projectionRef, { nextDueDate });
+                } else {
+                    batch.delete(projectionRef);
+                }
+            } else {
+                batch.delete(projectionRef);
+            }
 
             await batch.commit();
 
@@ -693,35 +872,25 @@ document.addEventListener('DOMContentLoaded', () => {
             transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
             if (projection.isRecurring) {
-                const nextPossibleDueDate = calculateNextDueDate(projection.nextDueDate, projection.recurrenceFrequency);
-                 if (nextPossibleDueDate && (!projection.endDate || nextPossibleDueDate <= projection.endDate)) {
-                    projections[projIndex].nextDueDate = nextPossibleDueDate;
+                const nextDueDate = calculateNextDueDate(projection.nextDueDate, projection.recurrenceFrequency);
+                if (nextDueDate && (!projection.endDate || nextDueDate <= projection.endDate)) {
+                    projection.nextDueDate = nextDueDate;
                     projections.sort((a, b) => (a.nextDueDate || '').localeCompare(b.nextDueDate || ''));
-                    showNotification(`Proyección "${projection.description}" convertida (fecha ${formatDate(todayDate)}). Próxima ocurrencia: ${formatDate(nextPossibleDueDate)}.`, 'success', 4000);
-                 } else {
-                    projections.splice(projIndex, 1);
-                    showNotification(`Proyección recurrente "${projection.description}" convertida (fecha ${formatDate(todayDate)}) y finalizada.`, 'success', 4000);
-                 }
+                } else {
+                    projections.splice(projections.findIndex(p => p.id === projectionId), 1);
+                }
             } else {
-                projections.splice(projIndex, 1);
-                showNotification(`Proyección "${projection.description}" convertida a transacción (fecha ${formatDate(todayDate)}).`);
+                projections.splice(projections.findIndex(p => p.id === projectionId), 1);
             }
 
-            showAllTransactions = false; // Reset pagination
-            showAllProjections = false; // Reset pagination
-            // Actualizar UI correspondiente (incluyendo gráfico)
-            if (isSectionVisible('dashboardSection')) { renderUI(); }
-            if (isSectionVisible('projectionsSection')) {
-                updateDashboard();
-                renderProjectionsPage(); // Actualiza lista y gráfico
-            } else {
-                updateDashboard();
-                updateProjectedDashboardCards();
-                renderProjectedBalanceChart(); // Actualiza gráfico aunque no esté visible
-            }
+            closeConvertProjectionModal();
+            showNotification('Proyección convertida exitosamente.');
+
+            if (isSectionVisible('dashboardSection')) renderUI();
+            if (isSectionVisible('projectionsSection')) renderProjectionsPage();
         } catch (error) {
-            console.error("Error converting projection to transaction:", error);
-            showNotification("Error al convertir proyección a transacción en Firebase.", "error");
+            console.error('Error converting projection:', error);
+            showNotification('Error al convertir la proyección.', 'error');
         }
     }
 
@@ -798,9 +967,59 @@ document.addEventListener('DOMContentLoaded', () => {
         if (target.closest('.edit-category-btn')) { if (categoryName) openCategoryEditModal(categoryName); return; } if (target.closest('.delete-category-btn')) { if (categoryName) openConfirmDeleteModal(categoryName, 'category'); return; } if (target.closest('.add-subcategory-btn')) { if (categoryName) openSubcategoryAddModal(categoryName); return; }
         const subcategoryItem = target.closest('.subcategory-item'); if (subcategoryItem) { const subName = subcategoryItem.dataset.subcategoryName; const parentName = subcategoryItem.dataset.parentCategory; if (target.closest('.edit-subcategory-btn')) { if (parentName && subName) openSubcategoryEditModal(parentName, subName); return; } if (target.closest('.delete-subcategory-btn')) { if (parentName && subName) openConfirmDeleteModal({ parent: parentName, sub: subName }, 'subcategory'); return; } } }
     function populateCategoryDropdowns() {
-        const selectsToPopulate = [ transactionCategorySelect, categoryFilter, projectionCategorySelect, projectionCategoryFilter ]; selectsToPopulate.forEach(selectElement => { if (!selectElement) return; let currentSelectedValue = selectElement.value; let firstOptionHTML = ''; if (selectElement === categoryFilter || selectElement === projectionCategoryFilter) { firstOptionHTML = '<option value="">Todas</option>'; if (categories.includes(UNCATEGORIZED)) firstOptionHTML += `<option value="${UNCATEGORIZED}">${UNCATEGORIZED}</option>`; } else if (selectElement === transactionCategorySelect || selectElement === projectionCategorySelect) { if (categories.includes(UNCATEGORIZED)) firstOptionHTML = `<option value="${UNCATEGORIZED}">${UNCATEGORIZED}</option>`; else firstOptionHTML = '<option value="">Seleccione...</option>'; } selectElement.innerHTML = firstOptionHTML; categories.forEach(catName => { if (catName !== UNCATEGORIZED) { const option = document.createElement('option'); option.value = catName; option.textContent = catName; selectElement.appendChild(option); } }); if (Array.from(selectElement.options).some(opt => opt.value === currentSelectedValue)) selectElement.value = currentSelectedValue; else if (selectElement === transactionCategorySelect || selectElement === projectionCategorySelect) { if (categories.includes(UNCATEGORIZED)) selectElement.value = UNCATEGORIZED; else selectElement.value = selectElement.options[0] ? selectElement.options[0].value : ""; } else selectElement.value = ""; }); }
+        const selectsToPopulate = [transactionCategorySelect, projectionCategorySelect, convertProjectionCategorySelect];
+        selectsToPopulate.forEach(selectElement => {
+            if (!selectElement) return;
+
+            let currentSelectedValue = selectElement.value;
+            let firstOptionHTML = `<option value="${UNCATEGORIZED}">${UNCATEGORIZED}</option>`;
+
+            selectElement.innerHTML = firstOptionHTML;
+            categories.forEach(catName => {
+                if (catName !== UNCATEGORIZED) {
+                    const option = document.createElement('option');
+                    option.value = catName;
+                    option.textContent = catName;
+                    selectElement.appendChild(option);
+                }
+            });
+
+            // Restaura el valor seleccionado previamente si es válido
+            if (Array.from(selectElement.options).some(opt => opt.value === currentSelectedValue)) {
+                selectElement.value = currentSelectedValue;
+            } else {
+                selectElement.value = UNCATEGORIZED;
+            }
+        });
+    }
     function populateSubcategoryDropdown(mainCategoryName, selectedSubcategory = null, targetSelectElement) {
-        if (!targetSelectElement) return; const subcategories = subcategoriesData[mainCategoryName] || []; targetSelectElement.innerHTML = '<option value="">-- Opcional --</option>'; if (subcategories.length > 0 && mainCategoryName !== UNCATEGORIZED) { targetSelectElement.disabled = false; targetSelectElement.style.backgroundColor = ''; subcategories.forEach(subName => { const option = document.createElement('option'); option.value = subName; option.textContent = subName; targetSelectElement.appendChild(option); }); if (selectedSubcategory && subcategories.includes(selectedSubcategory)) targetSelectElement.value = selectedSubcategory; else targetSelectElement.value = ""; } else { targetSelectElement.disabled = true; targetSelectElement.style.backgroundColor = '#f9fafb'; targetSelectElement.value = ""; } }
+        if (!targetSelectElement) return;
+
+        const subcategories = subcategoriesData[mainCategoryName] || [];
+        targetSelectElement.innerHTML = '<option value="">-- Opcional --</option>';
+
+        if (subcategories.length > 0 && mainCategoryName !== UNCATEGORIZED) {
+            targetSelectElement.disabled = false;
+            targetSelectElement.style.backgroundColor = '';
+            subcategories.forEach(subName => {
+                const option = document.createElement('option');
+                option.value = subName;
+                option.textContent = subName;
+                targetSelectElement.appendChild(option);
+            });
+
+            // Selecciona la subcategoría si es válida
+            if (selectedSubcategory && subcategories.includes(selectedSubcategory)) {
+                targetSelectElement.value = selectedSubcategory;
+            } else {
+                targetSelectElement.value = "";
+            }
+        } else {
+            targetSelectElement.disabled = true;
+            targetSelectElement.style.backgroundColor = '#f9fafb';
+            targetSelectElement.value = "";
+        }
+    }
 
     // --- Deletion Modal ---
     function openConfirmDeleteModal(identifier, type) {
@@ -811,140 +1030,95 @@ document.addEventListener('DOMContentLoaded', () => {
     async function executeDelete() {
          const type = confirmDeleteBtn.dataset.deleteType; const id = confirmDeleteBtn.dataset.deleteId; const parentCat = confirmDeleteBtn.dataset.deleteParent; const subName = confirmDeleteBtn.dataset.deleteSub; let needsUiUpdate = false; if (!type) { console.error("Deletion type missing."); closeConfirmDeleteModal(); return; } confirmDeleteBtn.disabled = true; confirmDeleteBtn.textContent = 'Eliminando...';
          try { switch (type) { case 'transaction': if (!id) throw new Error("Transaction ID missing"); await transactionsCol.doc(id).delete(); transactions = transactions.filter(tx => tx.id !== id); showNotification('Transacción eliminada.'); needsUiUpdate = true; break; case 'projection': if (!id) throw new Error("Projection ID missing"); await projectionsCol.doc(id).delete(); projections = projections.filter(p => p.id !== id); showNotification('Proyección eliminada.'); needsUiUpdate = true; break; case 'category': if (!id) throw new Error("Category name missing"); needsUiUpdate = await deleteCategoryAndUpdateItems(id); break; case 'subcategory': if (!parentCat || !subName) throw new Error("Subcategory parent or name missing"); needsUiUpdate = await deleteSubcategoryAndUpdateItems(parentCat, subName); break; default: throw new Error(`Unknown deletion type: ${type}`); } } catch (error) { console.error("Error during deletion execution:", error); showNotification(`Error al eliminar: ${error.message}`, "error"); needsUiUpdate = false; } finally { confirmDeleteBtn.disabled = false; confirmDeleteBtn.textContent = 'Sí, Eliminar'; closeConfirmDeleteModal();
-            if (needsUiUpdate) {
-                showAllTransactions = false; // Reset pagination after delete
-                showAllProjections = false; // Reset pagination after delete
-
-                if (isSectionVisible('dashboardSection')) { renderUI(); }
-                else if (isSectionVisible('projectionsSection')) { updateDashboard(); renderProjectionsPage(); } // Actualiza gráfico
-                else if (isSectionVisible('categorySection')) { renderCategoriesPage(); }
-
-                if (type === 'category' || type === 'subcategory') { populateCategoryDropdowns(); }
-
-                // Update projected dashboard/chart if a transaction or projection was deleted and we are not in projection section
-                if ((type === 'transaction' || type === 'projection') && !isSectionVisible('projectionsSection')) {
-                    updateDashboard(); // Necessary for currentRealBalance
-                    updateProjectedDashboardCards();
-                    renderProjectedBalanceChart();
+             if (needsUiUpdate) {
+                 if (isSectionVisible('dashboardSection')) { renderUI(); }
+                 else if (isSectionVisible('projectionsSection')) { updateDashboard(); renderProjectionsPage(); } // Actualiza gráfico
+                 else if (isSectionVisible('categorySection')) { renderCategoriesPage(); }
+                 if (type === 'category' || type === 'subcategory') { populateCategoryDropdowns(); }
+                 if (type === 'transaction' || type === 'projection') {
+                    if (!isSectionVisible('projectionsSection')) { // Actualizar gráfico si no estamos en proyecciones
+                        updateDashboard(); // Necesario para currentRealBalance
+                        updateProjectedDashboardCards();
+                        renderProjectedBalanceChart();
+                    }
                  }
-            }
+             }
          }
      }
 
     // --- UI Rendering & Filtering ---
-    function handleCardFilterClick(type) { activeCardTypeFilter = (activeCardTypeFilter === type && type !== null) ? null : type; typeFilter.value = activeCardTypeFilter || ''; updateCardFilterVisuals(); showAllTransactions = false; if (isSectionVisible('dashboardSection')) { renderUI(); } }
-    function updateCardFilterVisuals() { allRealCards.forEach(card => card.classList.remove('filtered')); if (activeCardTypeFilter === 'income') incomeCard.classList.add('filtered'); else if (activeCardTypeFilter === 'expense') expenseCard.classList.add('filtered'); }
+    function handleCardFilterClick(type) {
+        if (activeCardTypeFilter === type) {
+            // Clear filter if the same card is clicked again
+            activeCardTypeFilter = null;
+        } else {
+            // Apply filter for the selected card
+            activeCardTypeFilter = type;
+        }
+        updateCardFilterVisuals();
+        renderUI(); // Ensure the UI updates immediately
+    }
+
+    function updateCardFilterVisuals() {
+        allRealCards.forEach(card => card.classList.remove('filtered'));
+        if (activeCardTypeFilter === 'income') {
+            incomeCard.classList.add('filtered');
+        } else if (activeCardTypeFilter === 'expense') {
+            expenseCard.classList.add('filtered');
+        }
+        // Ensure balance card is not affected by filters
+        balanceCard.classList.remove('filtered');
+    }
+
     function clearCardFilterVisuals() { allRealCards.forEach(card => card.classList.remove('filtered')); activeCardTypeFilter = null; }
     function formatCurrency(amount, currencyCode) { const number = Number(amount); if (isNaN(number)) amount = 0; try { const locale = currencyCode === 'EUR' ? 'es-ES' : currencyCode === 'USD' ? 'en-US' : 'es-CO'; return new Intl.NumberFormat(locale, { style: 'currency', currency: currencyCode, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(number); } catch (error) { console.error("Currency formatting error:", error); return `${getCurrencySymbol(currencyCode)}${Math.trunc(number)}`; } }
     function formatDate(dateString) { if (!dateString) return 'Fecha inválida'; try { const date = new Date(dateString + 'T00:00:00Z'); if (isNaN(date.getTime())) throw new Error("Invalid date value"); return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }); } catch (error) { console.error("Date formatting error:", error, "Input:", dateString); return 'Fecha inválida'; } }
 
-    // --- Render Functions (con Paginación) ---
-    function renderTransactions(allFilteredTransactions) {
-        transactionList.innerHTML = '';
-        transactionPaginationControls.innerHTML = ''; // Limpiar controles previos
-
-        if (allFilteredTransactions.length === 0) {
-            transactionList.innerHTML = '<p style="text-align:center; padding:1rem; color:var(--text-muted);">No hay transacciones que mostrar con los filtros actuales.</p>';
-            return;
-        }
-
-        const itemsToShow = showAllTransactions ? allFilteredTransactions : allFilteredTransactions.slice(0, ITEMS_PER_PAGE);
-        const fragment = document.createDocumentFragment();
-
-        itemsToShow.forEach(tx => {
-            if (!tx || !tx.id) { console.warn("Skipping invalid transaction:", tx); return; }
-            const item = document.createElement('div'); item.className = 'list-item'; item.dataset.id = tx.id;
-            const isIncome = tx.type === 'income'; const amountSign = isIncome ? '+' : '-';
-            const itemClass = isIncome ? 'income' : 'expense'; const iconSVG = isIncome ? svgIncome : svgExpense;
-            const categoryDisplay = tx.subcategory ? `${tx.category || UNCATEGORIZED} / ${tx.subcategory}` : tx.category || UNCATEGORIZED;
-            const infoDiv = document.createElement('div'); infoDiv.className = 'item-info';
-            infoDiv.innerHTML = `<div class="item-icon ${itemClass}">${iconSVG}</div><div class="item-details"><h3>${tx.description || 'N/A'}</h3><p>${formatDate(tx.date)} &bull; ${categoryDisplay}</p></div>`;
-            const amountDiv = document.createElement('div'); amountDiv.className = `item-amount ${itemClass}`;
-            const amountValue = Number(tx.amount) || 0; amountDiv.textContent = `${amountSign}${formatCurrency(Math.abs(amountValue), selectedCurrency)}`;
-            const actionsDiv = document.createElement('div'); actionsDiv.className = 'item-actions';
-            actionsDiv.innerHTML = `<button class="action-btn edit-btn" title="Editar">${svgEdit}</button><button class="action-btn delete-btn" title="Eliminar">${svgDelete}</button>`;
-            item.appendChild(infoDiv); item.appendChild(amountDiv); item.appendChild(actionsDiv);
-            fragment.appendChild(item);
-        });
-        transactionList.appendChild(fragment);
-
-        // Añadir botón de paginación si hay más elementos que los mostrados
-        if (allFilteredTransactions.length > ITEMS_PER_PAGE) {
-            const buttonText = showAllTransactions ? 'Mostrar Menos' : `Mostrar Todos (${allFilteredTransactions.length})`;
-            const paginationButton = document.createElement('button');
-            paginationButton.id = 'toggleTransactionsBtn';
-            paginationButton.className = 'btn btn-secondary btn-pagination';
-            paginationButton.textContent = buttonText;
-            transactionPaginationControls.appendChild(paginationButton);
-        }
-    }
-
-    function renderProjectionsList(allFilteredProjections) {
-        projectionList.innerHTML = '';
-        projectionPaginationControls.innerHTML = ''; // Limpiar controles previos
-
-        const today = new Date();
-        today.setUTCHours(0, 0, 0, 0);
-
-        if (allFilteredProjections.length === 0) {
-            projectionList.innerHTML = '<p style="text-align:center; padding:1rem; color:var(--text-muted);">No hay proyecciones que mostrar con los filtros actuales.</p>';
-            return;
-        }
-
-        const itemsToShow = showAllProjections ? allFilteredProjections : allFilteredProjections.slice(0, ITEMS_PER_PAGE);
-        const fragment = document.createDocumentFragment();
-
-        itemsToShow.forEach(proj => {
-             if (!proj || !proj.id) { console.warn("Skipping invalid projection:", proj); return; }
-             const item = document.createElement('div'); item.className = 'list-item'; item.dataset.id = proj.id;
-             const isIncome = proj.type === 'income'; const amountSign = isIncome ? '+' : '-';
-             const itemClass = isIncome ? 'income' : 'expense'; const iconSVG = isIncome ? svgIncome : svgExpense;
-             const categoryDisplay = proj.subcategory ? `${proj.category || UNCATEGORIZED} / ${proj.subcategory}` : proj.category || UNCATEGORIZED;
-             let isOverdue = false; let overdueIndicatorHTML = '';
-             if (proj.nextDueDate) {
-                 try {
-                     const dueDateStr = proj.nextDueDate; const todayStr = getLocalDateString(today);
-                     if (dueDateStr < todayStr) { isOverdue = true; overdueIndicatorHTML = `<span class="overdue-indicator" title="Proyección Vencida">${svgWarning}</span>`; item.classList.add('overdue-item'); }
-                 } catch (e) { console.warn("Error parsing proj due date:", proj.nextDueDate, e); }
-             }
-             const recurringIndicator = proj.isRecurring ? `<span class="recurring-indicator" title="Recurrente (${getFrequencyText(proj.recurrenceFrequency)})">${svgRecurring}</span>` : '';
-             const endDateText = proj.isRecurring && proj.endDate ? ` (Hasta: ${formatDate(proj.endDate)})` : '';
-             const infoDiv = document.createElement('div'); infoDiv.className = 'item-info';
-             infoDiv.innerHTML = `<div class="item-icon ${itemClass}">${iconSVG}</div><div class="item-details"><h3>${proj.description || 'N/A'} ${recurringIndicator}</h3><p>${overdueIndicatorHTML}Próximo: ${formatDate(proj.nextDueDate)} &bull; ${categoryDisplay}${endDateText}</p></div>`;
-             const amountDiv = document.createElement('div'); amountDiv.className = `item-amount ${itemClass}`;
-             const amountValue = Number(proj.amount) || 0; amountDiv.textContent = `${amountSign}${formatCurrency(Math.abs(amountValue), selectedCurrency)}`;
-             const actionsDiv = document.createElement('div'); actionsDiv.className = 'item-actions';
-             actionsDiv.innerHTML = `<button class="action-btn convert-btn" title="Convertir a Transacción Real">${svgConvert}</button><button class="action-btn edit-btn" title="Editar Proyección">${svgEdit}</button><button class="action-btn delete-btn" title="Eliminar Proyección">${svgDelete}</button>`;
-             item.appendChild(infoDiv); item.appendChild(amountDiv); item.appendChild(actionsDiv);
-             fragment.appendChild(item);
-        });
-        projectionList.appendChild(fragment);
-
-        // Añadir botón de paginación si hay más elementos que los mostrados
-        if (allFilteredProjections.length > ITEMS_PER_PAGE) {
-            const buttonText = showAllProjections ? 'Mostrar Menos' : `Mostrar Todas (${allFilteredProjections.length})`;
-            const paginationButton = document.createElement('button');
-            paginationButton.id = 'toggleProjectionsBtn';
-            paginationButton.className = 'btn btn-secondary btn-pagination';
-            paginationButton.textContent = buttonText;
-            projectionPaginationControls.appendChild(paginationButton);
-        }
-    }
-
-    function getFrequencyText(frequencyValue) { const map = { 'daily': 'Diario', 'weekly': 'Semanal', 'bi-weekly': 'Quincenal', 'monthly': 'Mensual', 'yearly': 'Anual' }; return map[frequencyValue] || frequencyValue || 'Desconocida'; }
-
-    // --- Dashboard Update Functions ---
-    function updateDashboard() { const filteredTx = getFilteredTransactions(true); // Get all filtered for calculation
+    function updateDashboard() {
+        const filteredTx = getFilteredTransactions();
         const filteredIncome = filteredTx.filter(t => t.type === 'income').reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
         const filteredExpense = filteredTx.filter(t => t.type === 'expense').reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
         const totalIncomeGlobal = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
         const totalExpenseGlobal = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
-        const balanceGlobal = totalIncomeGlobal - totalExpenseGlobal; currentRealBalance = balanceGlobal;
-        incomeValueEl.textContent = formatCurrency(filteredIncome, selectedCurrency); expenseValueEl.textContent = formatCurrency(filteredExpense, selectedCurrency);
+        const balanceGlobal = totalIncomeGlobal - totalExpenseGlobal;
+
+        currentRealBalance = balanceGlobal;
+
+        // Update income card
+        incomeValueEl.textContent = formatCurrency(
+            activeCardTypeFilter === 'income' ? filteredIncome : totalIncomeGlobal,
+            selectedCurrency
+        );
+
+        // Update expense card
+        expenseValueEl.textContent = formatCurrency(
+            activeCardTypeFilter === 'expense' ? filteredExpense : totalExpenseGlobal,
+            selectedCurrency
+        );
+
+        // Update balance card
         balanceValueEl.textContent = formatCurrency(balanceGlobal, selectedCurrency);
-        const isFiltered = activeCardTypeFilter || searchInput.value || categoryFilter.value || typeFilter.value || startDateFilter.value || endDateFilter.value;
-        incomeCard.querySelector('.card-subtitle').textContent = isFiltered ? 'Total Real (Filtrado)' : 'Total Real (Global)'; expenseCard.querySelector('.card-subtitle').textContent = isFiltered ? 'Total Real (Filtrado)' : 'Total Real (Global)'; balanceCard.querySelector('.card-subtitle').textContent = 'Actual Real (Global)'; balanceValueEl.style.color = balanceGlobal < 0 ? 'var(--danger-color)' : 'var(--primary-color)'; return balanceGlobal;
+
+        // Update subtitles
+        incomeCard.querySelector('.card-subtitle').textContent =
+            activeCardTypeFilter === 'income' ? 'Total Real (Filtrado)' : 'Total Real (Global)';
+        expenseCard.querySelector('.card-subtitle').textContent =
+            activeCardTypeFilter === 'expense' ? 'Total Real (Filtrado)' : 'Total Real (Global)';
+        balanceCard.querySelector('.card-subtitle').textContent = 'Actual Real (Global)';
+
+        // Update balance card color
+        balanceValueEl.style.color = balanceGlobal < 0 ? 'var(--danger-color)' : 'var(--primary-color)';
     }
+
+    function renderTransactions(filteredTransactions) {
+        transactionList.innerHTML = ''; if (filteredTransactions.length === 0) { transactionList.innerHTML = '<p style="text-align:center; padding:1rem; color:var(--text-muted);">No hay transacciones que mostrar con los filtros actuales.</p>'; return; } const fragment = document.createDocumentFragment();
+        filteredTransactions.forEach(tx => { if (!tx || !tx.id) { console.warn("Skipping invalid transaction:", tx); return; } const item = document.createElement('div'); item.className = 'list-item'; item.dataset.id = tx.id; const isIncome = tx.type === 'income'; const amountSign = isIncome ? '+' : '-'; const itemClass = isIncome ? 'income' : 'expense'; const iconSVG = isIncome ? svgIncome : svgExpense; const categoryDisplay = tx.subcategory ? `${tx.category || UNCATEGORIZED} / ${tx.subcategory}` : tx.category || UNCATEGORIZED; const infoDiv = document.createElement('div'); infoDiv.className = 'item-info'; infoDiv.innerHTML = `<div class="item-icon ${itemClass}">${iconSVG}</div><div class="item-details"><h3>${tx.description || 'N/A'}</h3><p>${formatDate(tx.date)} &bull; ${categoryDisplay}</p></div>`; const amountDiv = document.createElement('div'); amountDiv.className = `item-amount ${itemClass}`; const amountValue = Number(tx.amount) || 0; amountDiv.textContent = `${amountSign}${formatCurrency(Math.abs(amountValue), selectedCurrency)}`; const actionsDiv = document.createElement('div'); actionsDiv.className = 'item-actions'; actionsDiv.innerHTML = `<button class="action-btn edit-btn" title="Editar">${svgEdit}</button><button class="action-btn delete-btn" title="Eliminar">${svgDelete}</button>`; item.appendChild(infoDiv); item.appendChild(amountDiv); item.appendChild(actionsDiv); fragment.appendChild(item); }); transactionList.appendChild(fragment); }
+    function renderProjectionsList(filteredProjections) {
+        projectionList.innerHTML = ''; const today = new Date(); today.setUTCHours(0, 0, 0, 0); if (filteredProjections.length === 0) { projectionList.innerHTML = '<p style="text-align:center; padding:1rem; color:var(--text-muted);">No hay proyecciones que mostrar con los filtros actuales.</p>'; return; } const fragment = document.createDocumentFragment();
+        filteredProjections.forEach(proj => { if (!proj || !proj.id) { console.warn("Skipping invalid projection:", proj); return; } const item = document.createElement('div'); item.className = 'list-item'; item.dataset.id = proj.id; const isIncome = proj.type === 'income'; const amountSign = isIncome ? '+' : '-'; const itemClass = isIncome ? 'income' : 'expense'; const iconSVG = isIncome ? svgIncome : svgExpense; const categoryDisplay = proj.subcategory ? `${proj.category || UNCATEGORIZED} / ${proj.subcategory}` : proj.category || UNCATEGORIZED; let isOverdue = false; let overdueIndicatorHTML = ''; if (proj.nextDueDate) { try { const dueDateStr = proj.nextDueDate; const todayStr = getLocalDateString(today); if (dueDateStr < todayStr) { isOverdue = true; overdueIndicatorHTML = `<span class="overdue-indicator" title="Proyección Vencida">${svgWarning}</span>`; item.classList.add('overdue-item'); } } catch (e) { console.warn("Error parsing proj due date:", proj.nextDueDate, e); } } const recurringIndicator = proj.isRecurring ? `<span class="recurring-indicator" title="Recurrente (${getFrequencyText(proj.recurrenceFrequency)})">${svgRecurring}</span>` : ''; const endDateText = proj.isRecurring && proj.endDate ? ` (Hasta: ${formatDate(proj.endDate)})` : ''; const infoDiv = document.createElement('div'); infoDiv.className = 'item-info'; infoDiv.innerHTML = `<div class="item-icon ${itemClass}">${iconSVG}</div><div class="item-details"><h3>${proj.description || 'N/A'} ${recurringIndicator}</h3><p>${overdueIndicatorHTML}Próximo: ${formatDate(proj.nextDueDate)} &bull; ${categoryDisplay}${endDateText}</p></div>`; const amountDiv = document.createElement('div'); amountDiv.className = `item-amount ${itemClass}`; const amountValue = Number(proj.amount) || 0; amountDiv.textContent = `${amountSign}${formatCurrency(Math.abs(amountValue), selectedCurrency)}`; const actionsDiv = document.createElement('div'); actionsDiv.className = 'item-actions'; actionsDiv.innerHTML = `<button class="action-btn convert-btn" title="Convertir a Transacción Real">${svgConvert}</button><button class="action-btn edit-btn" title="Editar Proyección">${svgEdit}</button><button class="action-btn delete-btn" title="Eliminar Proyección">${svgDelete}</button>`; item.appendChild(infoDiv); item.appendChild(amountDiv); item.appendChild(actionsDiv); fragment.appendChild(item); }); projectionList.appendChild(fragment); }
+    function getFrequencyText(frequencyValue) { const map = { 'daily': 'Diario', 'weekly': 'Semanal', 'bi-weekly': 'Quincenal', 'monthly': 'Mensual', 'yearly': 'Anual' }; return map[frequencyValue] || frequencyValue || 'Desconocida'; }
+
+    // --- Dashboard Update Functions ---
     function calculateProjectedTotals(endDateStr) { let totalIncomeUpToEndDate = 0; let totalExpenseUpToEndDate = 0; let endRangeDateStr = null; if (endDateStr) { try { if (!/^\d{4}-\d{2}-\d{2}$/.test(endDateStr)) throw new Error("Invalid date format"); const tempDate = new Date(endDateStr + 'T00:00:00Z'); if (isNaN(tempDate.getTime())) throw new Error("Invalid date value"); endRangeDateStr = endDateStr; } catch(e) { console.error("Error parsing projection end date:", e); showNotification("Fecha de proyección inválida.", "warning"); return { projectedIncomeSum: NaN, projectedExpenseSum: NaN, projectedBalance: NaN }; } } else { console.warn("No end date provided for projection calculation. Returning real totals."); const realIncome = transactions.filter(t => t.type === 'income').reduce((s, t) => s + (Number(t.amount) || 0), 0); const realExpense = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + (Number(t.amount) || 0), 0); return { projectedIncomeSum: realIncome, projectedExpenseSum: realExpense, projectedBalance: currentRealBalance }; }
         transactions.forEach(tx => { if (tx.date && tx.date <= endRangeDateStr) { if (tx.type === 'income') totalIncomeUpToEndDate += (Number(tx.amount) || 0); else if (tx.type === 'expense') totalExpenseUpToEndDate += (Number(tx.amount) || 0); } });
         projections.forEach(p => { if (!p.isRecurring) { if (p.nextDueDate && p.nextDueDate <= endRangeDateStr) { if (p.type === 'income') totalIncomeUpToEndDate += (Number(p.amount) || 0); else if (p.type === 'expense') totalExpenseUpToEndDate += (Number(p.amount) || 0); } } else { let currentDueDate = p.nextDueDate; while (currentDueDate && currentDueDate <= endRangeDateStr) { if (p.type === 'income') totalIncomeUpToEndDate += (Number(p.amount) || 0); else if (p.type === 'expense') totalExpenseUpToEndDate += (Number(p.amount) || 0); const next = calculateNextDueDate(currentDueDate, p.recurrenceFrequency); if (!next || (p.endDate && next > p.endDate)) break; currentDueDate = next; } } });
@@ -969,73 +1143,53 @@ document.addEventListener('DOMContentLoaded', () => {
         if (projectedBalanceChart) { projectedBalanceChart.data.labels = labels; projectedBalanceChart.data.datasets[0].data = data; projectedBalanceChart.options.scales.y.title.text = `Saldo (${selectedCurrency})`; projectedBalanceChart.update(); } else { projectedBalanceChart = new Chart(projectedBalanceChartCanvas, chartConfig); } }
 
     // --- General Helper Functions ---
-    function getLocalDateString(date = new Date()) { const year = date.getFullYear(); const month = String(date.getMonth() + 1).padStart(2, '0'); const day = String(date.getDate()).padStart(2, '0'); return `${year}-${month}-${day}`; }
+    function getLocalDateString(date = new Date()) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
     function showNotification(message, type = 'success', duration = 3000) { notification.textContent = message; notification.className = 'notification'; notification.classList.add(type, 'show'); setTimeout(() => { notification.classList.remove('show'); }, duration); }
-
-    // --- Get Filtered Data Functions ---
-    // Added ignoreDateFilter param to allow getting all filtered items for balance calc
-    function getFilteredTransactions(ignoreDateFilter = false) {
-        const searchTerm = searchInput.value.toLowerCase().trim();
-        const selectedCategory = categoryFilter.value;
-        const selectedType = typeFilter.value || activeCardTypeFilter;
-        const startDate = startDateFilter.value;
-        const endDate = endDateFilter.value;
-
-        return transactions.filter(tx => {
-            const descriptionMatch = !searchTerm || (tx.description && tx.description.toLowerCase().includes(searchTerm));
-            const categoryMatch = !selectedCategory || tx.category === selectedCategory;
-            const typeMatch = !selectedType || tx.type === selectedType;
-            const txDate = tx.date;
-
-            let dateMatch = true;
-            if (!ignoreDateFilter) { // Only apply date filter if not ignored
-                if (startDate && (!txDate || txDate < startDate)) dateMatch = false;
-                if (endDate && (!txDate || txDate > endDate)) dateMatch = false;
-            }
-
-            return descriptionMatch && categoryMatch && typeMatch && dateMatch;
-        });
-    }
-
-    function getFilteredProjections() {
-        const searchTerm = projectionSearchInput.value.toLowerCase().trim();
-        const selectedCategory = projectionCategoryFilter.value;
-        const selectedType = projectionTypeFilter.value;
-        const startDate = projectionStartDateFilter.value;
-        const endDate = projectionEndDateFilter.value;
-
-        return projections.filter(p => {
-            const descriptionMatch = !searchTerm || (p.description && p.description.toLowerCase().includes(searchTerm));
-            const categoryMatch = !selectedCategory || p.category === selectedCategory;
-            const typeMatch = !selectedType || p.type === selectedType;
-            const projDueDate = p.nextDueDate;
-
-            let dateMatch = true;
-            if (startDate && (!projDueDate || projDueDate < startDate)) dateMatch = false;
-            if (endDate && (!projDueDate || projDueDate > endDate)) dateMatch = false;
-
-            return descriptionMatch && categoryMatch && typeMatch && dateMatch;
-        });
-    }
-
+    function getFilteredTransactions() { const searchTerm = searchInput.value.toLowerCase().trim(); const selectedCategory = categoryFilter.value; const startDate = startDateFilter.value; const endDate = endDateFilter.value; return transactions.filter(tx => { const descriptionMatch = !searchTerm || (tx.description && tx.description.toLowerCase().includes(searchTerm)); const categoryMatch = !selectedCategory || tx.category === selectedCategory; const typeMatch = !activeCardTypeFilter || tx.type === activeCardTypeFilter; const txDate = tx.date; let dateMatch = true; if (startDate && (!txDate || txDate < startDate)) dateMatch = false; if (endDate && (!txDate || txDate > endDate)) dateMatch = false; return descriptionMatch && categoryMatch && typeMatch && dateMatch; }); }
+    function getFilteredProjections() { const searchTerm = projectionSearchInput.value.toLowerCase().trim(); const selectedCategory = projectionCategoryFilter.value; const startDate = projectionStartDateFilter.value; const endDate = projectionEndDateFilter.value; return projections.filter(p => { const descriptionMatch = !searchTerm || (p.description && p.description.toLowerCase().includes(searchTerm)); const categoryMatch = !selectedCategory || p.category === selectedCategory; const typeMatch = !activeProjectionCardFilter || p.type === activeProjectionCardFilter; const projDueDate = p.nextDueDate; let dateMatch = true; if (startDate && (!projDueDate || projDueDate < startDate)) dateMatch = false; if (endDate && (!projDueDate || projDueDate > endDate)) dateMatch = false; return descriptionMatch && categoryMatch && typeMatch && dateMatch; }); }
 
     // --- Main Render Functions ---
-    function renderUI() {
-        const filteredTx = getFilteredTransactions(); // Get filtered transactions respecting dates for list display
-        renderTransactions(filteredTx);
-        updateDashboard(); // Recalculates balance based on filters (uses getFilteredTransactions internally)
-        updateCardFilterVisuals();
-        updateProjectedDashboardCards();
-        // El gráfico se actualiza al renderizar la sección de proyecciones o cambiar moneda/fecha de proyección
+    function renderUI() { const filteredTx = getFilteredTransactions(); renderTransactions(filteredTx); updateDashboard(); updateCardFilterVisuals(); updateProjectedDashboardCards(); /*renderProjectedBalanceChart();*/ } // El gráfico se actualiza al renderizar secciones o cambiar moneda/fecha
+    function renderProjectionsPage() { updateProjectedDashboardCards(); const filteredProjections = getFilteredProjections(); renderProjectionsList(filteredProjections); renderProjectedBalanceChart(); } // Llama a render gráfico
+
+    // --- Función para manejar clics en tarjetas de proyecciones ---
+    function handleProjectionCardClick(type) {
+        if (activeProjectionCardFilter === type) {
+            // Si ya está filtrado por esta tarjeta, limpiar filtro
+            activeProjectionCardFilter = null;
+        } else {
+            // Aplicar filtro según el tipo de tarjeta
+            activeProjectionCardFilter = type;
+        }
+        updateProjectionCardFilterVisuals();
+        renderProjectionsPage();
     }
-    function renderProjectionsPage() {
-        updateProjectedDashboardCards(); // Needs to be called before getting filtered projections if filter depends on it? No.
-        const filteredProjections = getFilteredProjections();
-        renderProjectionsList(filteredProjections);
-        renderProjectedBalanceChart(); // Llama a render gráfico
+
+    // --- Actualizar visualización de tarjetas filtradas ---
+    function updateProjectionCardFilterVisuals() {
+        [projectedIncomeCard, projectedExpenseCard, projectedBalanceCard].forEach(card => card.classList.remove('filtered'));
+
+        if (activeProjectionCardFilter === 'income') {
+            projectedIncomeCard.classList.add('filtered');
+        } else if (activeProjectionCardFilter === 'expense') {
+            projectedExpenseCard.classList.add('filtered');
+        }
+    }
+
+    // --- Configurar eventos para tarjetas de proyecciones ---
+    function setupProjectionCardFilters() {
+        projectedIncomeCard.addEventListener('click', () => handleProjectionCardClick('income'));
+        projectedExpenseCard.addEventListener('click', () => handleProjectionCardClick('expense'));
+        projectedBalanceCard.addEventListener('click', () => handleProjectionCardClick(null)); // Mostrar todo
     }
 
     // --- Start App ---
     initializeApp();
+    setupProjectionCardFilters();
 
 }); // End of DOMContentLoaded
